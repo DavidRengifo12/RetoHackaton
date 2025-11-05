@@ -70,3 +70,48 @@
   box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
 }
 
+/* Cards de navegación con efecto hover */
+.hover-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Mejoras responsive para móviles */
+@media (max-width: 576px) {
+  .container-fluid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  .card-body {
+    padding: 1rem;
+  }
+
+  /* Tablas responsive en móviles */
+  .table-responsive {
+    font-size: 0.875rem;
+  }
+
+  .table-responsive th,
+  .table-responsive td {
+    padding: 0.5rem;
+  }
+}
+
+/* Mejoras para tablets */
+@media (min-width: 577px) and (max-width: 768px) {
+  .container-fluid {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+

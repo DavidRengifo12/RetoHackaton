@@ -47,7 +47,7 @@ const InventoryPage = () => {
   }
 
   return (
-    <div className="container-fluid mt-4">
+    <div className="container-fluid mt-4 px-3 px-md-4">
       <div className="row mb-4">
         <div className="col-12">
           <h1 className="mb-4">📦 Gestión de Inventario</h1>
@@ -55,8 +55,8 @@ const InventoryPage = () => {
       </div>
 
       {/* Filtros y búsqueda */}
-      <div className="row mb-4">
-        <div className="col-md-4">
+      <div className="row mb-4 g-3">
+        <div className="col-12 col-sm-6 col-md-4">
           <div className="input-group">
             <span className="input-group-text">🔍</span>
             <input
@@ -68,7 +68,7 @@ const InventoryPage = () => {
             />
           </div>
         </div>
-        <div className="col-md-3">
+        <div className="col-12 col-sm-6 col-md-3">
           <select
             className="form-select"
             value={categoryFilter}
@@ -80,7 +80,7 @@ const InventoryPage = () => {
             ))}
           </select>
         </div>
-        <div className="col-md-3">
+        <div className="col-12 col-sm-6 col-md-3">
           <select
             className="form-select"
             value={genderFilter}
@@ -92,7 +92,7 @@ const InventoryPage = () => {
             ))}
           </select>
         </div>
-        <div className="col-md-2">
+        <div className="col-12 col-sm-6 col-md-2">
           <button
             className="btn btn-outline-secondary w-100"
             onClick={handleClearFilters}

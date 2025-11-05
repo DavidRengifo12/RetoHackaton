@@ -87,7 +87,7 @@ const UploadPage = () => {
   };
 
   return (
-    <div className="container-fluid mt-4">
+    <div className="container-fluid mt-4 px-3 px-md-4">
       <div className="row mb-4">
         <div className="col-12">
           <h1 className="mb-4">📤 Cargar Datos Históricos</h1>
@@ -95,7 +95,7 @@ const UploadPage = () => {
       </div>
 
       <div className="row">
-        <div className="col-md-8 mx-auto">
+        <div className="col-12 col-md-10 col-lg-8 mx-auto">
           <div className="card shadow-sm">
             <div className="card-body">
               <h5 className="card-title mb-4">Subir Archivo CSV/Excel</h5>
