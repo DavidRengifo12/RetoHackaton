@@ -1,0 +1,72 @@
+/* Estilos globales adicionales */
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Cards personalizados */
+.card-custom {
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card-custom:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Badges personalizados */
+.badge-custom {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+}
+
+/* Tablas personalizadas */
+.table-responsive {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.table-custom {
+  margin-bottom: 0;
+}
+
+.table-custom thead {
+  background-color: #f8f9fa;
+}
+
+.table-custom tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Botones personalizados */
+.btn-custom {
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+}
+
+/* Inputs personalizados */
+.form-control-custom {
+  border-radius: 0.5rem;
+  border: 1px solid #dee2e6;
+}
+
+.form-control-custom:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
