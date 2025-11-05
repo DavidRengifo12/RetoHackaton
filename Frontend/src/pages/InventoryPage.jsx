@@ -1,36 +1,68 @@
 // Página de inventario
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useProducts } from '../hooks/useProducts';
 import { formatCurrency, formatPercentage, getRotationBadge } from '../utils/helpers';
 import Loading from '../components/common/Loading';
+
+// Lista completa de géneros disponibles
+const AVAILABLE_GENDERS = ['Hombre', 'Mujer', 'Unisex', 'Niño', 'Niña'];
 
 const InventoryPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [genderFilter, setGenderFilter] = useState('');
-  const [categories, setCategories] = useState([]);
-  const [genders, setGenders] = useState([]);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
-  const filters = {
-    search: searchTerm,
-    category: categoryFilter,
-    gender: genderFilter,
-  };
+  // Cargar todos los productos una sola vez (sin filtros)
+  const { products: allProducts, loading, error } = useProducts({});
 
-  const { products, loading, error, refreshProducts } = useProducts(filters);
-
-  useEffect(() => {
-    // Extraer categorías y géneros únicos de los productos
-    if (products.length > 0) {
-      const uniqueCategories = [...new Set(products.map(p => p.categoria).filter(Boolean))];
-      const uniqueGenders = [...new Set(products.map(p => p.genero).filter(Boolean))];
-      setCategories(uniqueCategories);
-      setGenders(uniqueGenders);
+  // Extraer categorías únicas de los productos
+  const categories = useMemo(() => {
+    if (allProducts.length > 0) {
+      return [...new Set(allProducts.map(p => p.categoria).filter(Boolean))].sort();
     }
-  }, [products]);
+    return [];
+  }, [allProducts]);
+
+  // Filtrar productos localmente basado en los filtros
+  const filteredProducts = useMemo(() => {
+    let filtered = [...allProducts];
+
+    // Filtro por búsqueda (nombre)
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.nombre?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Filtro por categoría
+    if (categoryFilter) {
+      filtered = filtered.filter(p => p.categoria === categoryFilter);
+    }
+
+    // Filtro por género
+    if (genderFilter) {
+      filtered = filtered.filter(p => p.genero === genderFilter);
+    }
+
+    return filtered;
+  }, [allProducts, debouncedSearchTerm, categoryFilter, genderFilter]);
+
+  // Debounce para la búsqueda (esperar 300ms después de que el usuario deje de escribir)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchTerm]);
 
   const handleClearFilters = () => {
     setSearchTerm('');
+    setDebouncedSearchTerm('');
     setCategoryFilter('');
     setGenderFilter('');
   };
@@ -87,7 +119,7 @@ const InventoryPage = () => {
             onChange={(e) => setGenderFilter(e.target.value)}
           >
             <option value="">Todos los géneros</option>
-            {genders.map(gen => (
+            {AVAILABLE_GENDERS.map(gen => (
               <option key={gen} value={gen}>{gen}</option>
             ))}
           </select>
@@ -122,14 +154,14 @@ const InventoryPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {products.length === 0 ? (
+                    {filteredProducts.length === 0 ? (
                       <tr>
                         <td colSpan="8" className="text-center text-muted py-4">
-                          No se encontraron productos
+                          {loading ? 'Cargando productos...' : 'No se encontraron productos'}
                         </td>
                       </tr>
                     ) : (
-                      products.map(product => (
+                      filteredProducts.map(product => (
                         <tr key={product.id}>
                           <td>{product.nombre}</td>
                           <td>
