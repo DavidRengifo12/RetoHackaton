@@ -390,22 +390,10 @@ const ShopPage = () => {
                   {/* Imagen del producto */}
                   <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
                     {(() => {
-                      // Generar URL de la imagen
-                      const imageUrl = product.imagen_url
-                        ? storageService.getProductImageUrl(product) ||
-                          product.imagen_url
-                        : null;
-
-                      // Log para depuración
-                      if (product.imagen_url && !imageUrl) {
-                        console.warn(
-                          "⚠️ No se pudo generar URL para producto:",
-                          {
-                            producto: product.nombre,
-                            imagen_url: product.imagen_url,
-                          }
-                        );
-                      }
+                      // Generar URL de la imagen (siempre retorna algo, incluso placeholder)
+                      const imageUrl =
+                        storageService.getProductImageUrl(product) ||
+                        storageService.getPlaceholderImage(product.id);
 
                       if (imageUrl) {
                         return (
@@ -416,40 +404,23 @@ const ShopPage = () => {
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                               loading="lazy"
                               onError={(e) => {
-                                // Error más detallado para depuración
-                                const errorInfo = {
-                                  productId: product.id,
-                                  productName: product.nombre,
-                                  imagen_url_original: product.imagen_url,
-                                  generatedUrl: imageUrl,
-                                  error: "La imagen no pudo cargarse.",
-                                  solucion: [
-                                    "1. Ve a Supabase Dashboard > Storage > productos",
-                                    "2. Haz clic en 'Settings' (Configuración)",
-                                    "3. Activa 'Public bucket' (Bucket público)",
-                                    "4. Guarda los cambios",
-                                    "5. Verifica que el archivo exista en la ruta: " +
-                                      product.imagen_url,
-                                  ],
-                                };
-                                console.error(
-                                  "❌ Error al cargar imagen del producto:",
-                                  errorInfo
-                                );
-                                console.error(
-                                  "🔧 SOLUCIÓN:",
-                                  errorInfo.solucion.join("\n")
+                                // Si falla la imagen, usar placeholder de Unsplash
+                                const placeholderUrl =
+                                  storageService.getPlaceholderImage(
+                                    product.id
+                                  );
+                                console.warn(
+                                  "⚠️ Imagen no cargó, usando placeholder:",
+                                  {
+                                    producto: product.nombre,
+                                    imagen_original: imageUrl,
+                                    placeholder: placeholderUrl,
+                                  }
                                 );
 
-                                // Ocultar imagen y mostrar placeholder
-                                e.target.style.display = "none";
-                                const placeholder =
-                                  e.target.parentElement.querySelector(
-                                    ".image-placeholder"
-                                  );
-                                if (placeholder) {
-                                  placeholder.style.display = "flex";
-                                }
+                                // Cambiar a imagen placeholder
+                                e.target.src = placeholderUrl;
+                                e.target.onerror = null; // Evitar loop infinito
                               }}
                               onLoad={(e) => {
                                 // Ocultar placeholder cuando la imagen carga correctamente

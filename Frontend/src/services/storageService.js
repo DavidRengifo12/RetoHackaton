@@ -4,6 +4,18 @@ import { toastService } from "../utils/toastService";
 
 const BUCKET_NAME = "productos"; // Nombre del bucket en Supabase
 
+// URLs de imágenes placeholder públicas (fallback)
+const PLACEHOLDER_IMAGES = [
+  "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1503602642458-232111445657?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop",
+];
+
 export const storageService = {
   // Subir imagen de producto
   async uploadProductImage(file, productId) {
@@ -179,14 +191,29 @@ export const storageService = {
     }
   },
 
+  // Obtener imagen placeholder aleatoria
+  getPlaceholderImage(productId = null) {
+    // Usar el ID del producto para seleccionar una imagen consistente
+    if (productId) {
+      const index = productId.split("-").reduce((sum, part) => {
+        return sum + parseInt(part.replace(/\D/g, ""), 16) || 0;
+      }, 0);
+      return PLACEHOLDER_IMAGES[index % PLACEHOLDER_IMAGES.length];
+    }
+    return PLACEHOLDER_IMAGES[
+      Math.floor(Math.random() * PLACEHOLDER_IMAGES.length)
+    ];
+  },
+
   // Obtener URL pública de imagen de producto (helper para productos)
   getProductImageUrl(product) {
     if (!product || !product.imagen_url) {
       console.warn(
-        "getProductImageUrl: Producto sin imagen_url",
+        "getProductImageUrl: Producto sin imagen_url, usando placeholder",
         product?.nombre
       );
-      return null;
+      // Retornar placeholder si no hay imagen_url
+      return this.getPlaceholderImage(product?.id);
     }
 
     const imagenUrl = product.imagen_url.trim();
@@ -233,12 +260,13 @@ export const storageService = {
       return url;
     }
 
-    console.error("❌ No se pudo obtener URL para:", {
+    console.warn("⚠️ No se pudo obtener URL para:", {
       producto: product.nombre,
       imagen_url: imagenUrl,
       ruta_normalizada: normalizedPath,
     });
-    return null;
+    // Retornar placeholder si no se pudo generar URL
+    return this.getPlaceholderImage(product?.id);
   },
 
   // Validar archivo antes de subir
