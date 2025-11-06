@@ -1,6 +1,6 @@
 // Servicio para gestión de carritos de compra
-import supabase from './supabase';
-import { toastService } from '../utils/toastService';
+import supabase from "./supabase";
+import { toastService } from "../utils/toastService";
 
 export const cartService = {
   // Obtener o crear carrito activo del usuario
@@ -8,10 +8,10 @@ export const cartService = {
     try {
       // Buscar carrito activo
       const { data: existingCart, error: fetchError } = await supabase
-        .from('carritos')
-        .select('*')
-        .eq('usuario_id', userId)
-        .eq('activo', true)
+        .from("carritos")
+        .select("*")
+        .eq("usuario_id", userId)
+        .eq("activo", true)
         .single();
 
       if (existingCart && !fetchError) {
@@ -20,7 +20,7 @@ export const cartService = {
 
       // Si no existe, crear uno nuevo
       const { data: newCart, error: createError } = await supabase
-        .from('carritos')
+        .from("carritos")
         .insert([{ usuario_id: userId, activo: true }])
         .select()
         .single();
@@ -37,15 +37,16 @@ export const cartService = {
   async getCartItems(cartId) {
     try {
       const { data, error } = await supabase
-        .from('carritos_items')
-        .select('*, productos(*)')
-        .eq('carrito_id', cartId)
-        .order('creado_en', { ascending: false });
+        .from("carritos_items")
+        .select("*, productos(*)")
+        .eq("carrito_id", cartId);
 
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      toastService.error(`Error al obtener items del carrito: ${error.message}`);
+      toastService.error(
+        `Error al obtener items del carrito: ${error.message}`
+      );
       return { data: null, error };
     }
   },
@@ -55,60 +56,62 @@ export const cartService = {
     try {
       // Obtener precio del producto
       const { data: product, error: productError } = await supabase
-        .from('productos')
-        .select('precio, stock')
-        .eq('id', productId)
+        .from("productos")
+        .select("precio, stock")
+        .eq("id", productId)
         .single();
 
       if (productError) throw productError;
 
       if (product.stock < cantidad) {
-        toastService.error('No hay suficiente stock disponible');
-        return { data: null, error: { message: 'Stock insuficiente' } };
+        toastService.error("No hay suficiente stock disponible");
+        return { data: null, error: { message: "Stock insuficiente" } };
       }
 
       // Verificar si el producto ya está en el carrito
       const { data: existingItem, error: checkError } = await supabase
-        .from('carritos_items')
-        .select('*')
-        .eq('carrito_id', cartId)
-        .eq('producto_id', productId)
+        .from("carritos_items")
+        .select("*")
+        .eq("carrito_id", cartId)
+        .eq("producto_id", productId)
         .single();
 
       if (existingItem && !checkError) {
         // Actualizar cantidad
         const newCantidad = existingItem.cantidad + cantidad;
         if (newCantidad > product.stock) {
-          toastService.error('No hay suficiente stock disponible');
-          return { data: null, error: { message: 'Stock insuficiente' } };
+          toastService.error("No hay suficiente stock disponible");
+          return { data: null, error: { message: "Stock insuficiente" } };
         }
 
         const { data, error } = await supabase
-          .from('carritos_items')
+          .from("carritos_items")
           .update({ cantidad: newCantidad })
-          .eq('id', existingItem.id)
+          .eq("id", existingItem.id)
           .select()
           .single();
 
         if (error) throw error;
-        toastService.success('Producto actualizado en el carrito');
+        toastService.success("Producto actualizado en el carrito");
         return { data, error: null };
       }
 
       // Insertar nuevo item
       const { data, error } = await supabase
-        .from('carritos_items')
-        .insert([{
-          carrito_id: cartId,
-          producto_id: productId,
-          cantidad,
-          precio_unitario: product.precio
-        }])
+        .from("carritos_items")
+        .insert([
+          {
+            carrito_id: cartId,
+            producto_id: productId,
+            cantidad,
+            precio_unitario: product.precio,
+          },
+        ])
         .select()
         .single();
 
       if (error) throw error;
-      toastService.success('Producto agregado al carrito');
+      toastService.success("Producto agregado al carrito");
       return { data, error: null };
     } catch (error) {
       toastService.error(`Error al agregar al carrito: ${error.message}`);
@@ -125,22 +128,22 @@ export const cartService = {
 
       // Verificar stock disponible
       const { data: item, error: itemError } = await supabase
-        .from('carritos_items')
-        .select('producto_id, productos(stock)')
-        .eq('id', itemId)
+        .from("carritos_items")
+        .select("producto_id, productos(stock)")
+        .eq("id", itemId)
         .single();
 
       if (itemError) throw itemError;
 
       if (cantidad > item.productos.stock) {
-        toastService.error('No hay suficiente stock disponible');
-        return { data: null, error: { message: 'Stock insuficiente' } };
+        toastService.error("No hay suficiente stock disponible");
+        return { data: null, error: { message: "Stock insuficiente" } };
       }
 
       const { data, error } = await supabase
-        .from('carritos_items')
+        .from("carritos_items")
         .update({ cantidad })
-        .eq('id', itemId)
+        .eq("id", itemId)
         .select()
         .single();
 
@@ -156,12 +159,12 @@ export const cartService = {
   async removeFromCart(itemId) {
     try {
       const { error } = await supabase
-        .from('carritos_items')
+        .from("carritos_items")
         .delete()
-        .eq('id', itemId);
+        .eq("id", itemId);
 
       if (error) throw error;
-      toastService.success('Producto eliminado del carrito');
+      toastService.success("Producto eliminado del carrito");
       return { data: true, error: null };
     } catch (error) {
       toastService.error(`Error al eliminar del carrito: ${error.message}`);
@@ -173,12 +176,12 @@ export const cartService = {
   async clearCart(cartId) {
     try {
       const { error } = await supabase
-        .from('carritos_items')
+        .from("carritos_items")
         .delete()
-        .eq('carrito_id', cartId);
+        .eq("carrito_id", cartId);
 
       if (error) throw error;
-      toastService.success('Carrito vaciado');
+      toastService.success("Carrito vaciado");
       return { data: true, error: null };
     } catch (error) {
       toastService.error(`Error al vaciar carrito: ${error.message}`);
@@ -191,13 +194,13 @@ export const cartService = {
     try {
       // Desactivar carrito actual
       const { error: deactivateError } = await supabase
-        .from('carritos')
+        .from("carritos")
         .update({ activo: false })
-        .eq('id', cartId);
+        .eq("id", cartId);
 
       if (deactivateError) throw deactivateError;
 
-      toastService.success('Carrito guardado exitosamente');
+      toastService.success("Carrito guardado exitosamente");
       return { data: true, error: null };
     } catch (error) {
       toastService.error(`Error al guardar carrito: ${error.message}`);
@@ -205,4 +208,3 @@ export const cartService = {
     }
   },
 };
-

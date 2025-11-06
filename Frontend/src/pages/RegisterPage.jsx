@@ -1,171 +1,331 @@
-// Página de registro
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuthContext } from '../context/AuthContext';
-import { authService } from '../services/authService';
-import { toastService } from '../utils/toastService';
-import { FaUser, FaUserTie, FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
+// Página de registro - Diseño moderno
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuthContext } from "../context/AuthContext";
+import { toastService } from "../utils/toastService";
+import { FaUser, FaEnvelope, FaPhone, FaLock, FaCheck } from "react-icons/fa";
+import supabase from "../services/supabase";
 
 const RegisterPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [nombreCompleto, setNombreCompleto] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, user } = useAuthContext();
   const navigate = useNavigate();
 
   // Si ya está autenticado, redirigir al dashboard
-  if (isAuthenticated) {
-    navigate('/dashboard');
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, user, navigate]);
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    // Validar contraseñas
-    if (password !== confirmPassword) {
-      toastService.error('Las contraseñas no coinciden');
-      setLoading(false);
+    // Validaciones
+    if (!nombre || !email || !password) {
+      toastService.error("Nombre, email y contraseña son requeridos");
       return;
     }
 
     if (password.length < 6) {
-      toastService.error('La contraseña debe tener al menos 6 caracteres');
-      setLoading(false);
+      toastService.error("La contraseña debe tener al menos 6 caracteres");
       return;
     }
 
+    // Validar formato de email básico
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toastService.error("Por favor ingresa un email válido");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const result = await authService.signUp(email, password, nombreCompleto);
-      if (!result.error) {
-        // El toast ya se muestra desde authService
+      console.log("[RegisterPage] Iniciando registro para:", email.trim());
+
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          data: {
+            nombre: nombre.trim(),
+            phone: phone.trim() || null,
+            rol: "usuario",
+          },
+          emailRedirectTo: window.location.origin + "/login",
+        },
+      });
+
+      if (error) {
+        console.error("[RegisterPage] Error de Supabase:", error);
+        toastService.error(
+          error.message || "Error al registrarse. Verifica tus datos."
+        );
+        setLoading(false);
+        return;
+      }
+
+      console.log("[RegisterPage] Respuesta de registro:", {
+        user: data.user?.id,
+        session: data.session?.user?.id,
+        needsConfirmation: !data.session,
+      });
+
+      // Supabase puede requerir confirmación de email
+      // Si no hay sesión, significa que el usuario necesita confirmar su email
+      if (!data.session && data.user) {
+        toastService.success(
+          "¡Registro exitoso! Por favor revisa tu email para confirmar tu cuenta."
+        );
+
+        // Limpiar formulario
+        setNombre("");
+        setEmail("");
+        setPassword("");
+        setPhone("");
+
+        setLoading(false);
+
+        // Redirigir al login después de un momento
+        setTimeout(() => {
+          navigate("/login");
+        }, 3000);
+        return;
+      }
+
+      // Si hay sesión, el usuario está autenticado inmediatamente
+      if (data.user) {
+        console.log("[RegisterPage] Usuario creado, creando perfil...");
+
+        // El trigger debería crear el usuario en la tabla usuarios automáticamente
+        // Pero intentamos crear/actualizar el perfil manualmente como respaldo
+        try {
+          const { data: perfilData, error: perfilError } = await supabase
+            .from("usuarios")
+            .upsert(
+              {
+                id: data.user.id,
+                nombre: nombre.trim(),
+                rol: "usuario",
+                activo: true,
+              },
+              {
+                onConflict: "id",
+              }
+            )
+            .select()
+            .single();
+
+          if (perfilError) {
+            console.warn(
+              "[RegisterPage] Error al crear perfil en usuarios:",
+              perfilError
+            );
+            // No es crítico si el trigger ya lo creó
+            // Solo mostramos un warning en consola
+          } else {
+            console.log(
+              "[RegisterPage] Perfil creado/actualizado:",
+              perfilData
+            );
+          }
+        } catch (perfilErr) {
+          console.warn("[RegisterPage] Excepción al crear perfil:", perfilErr);
+          // Continuamos aunque haya error, el trigger puede haberlo creado
+        }
+
+        toastService.success("Registro exitoso. Redirigiendo al login...");
+
+        // Limpiar formulario
+        setNombre("");
+        setEmail("");
+        setPassword("");
+        setPhone("");
+
+        setLoading(false);
+
         // Redirigir al login después del registro
         setTimeout(() => {
-          navigate('/login');
+          navigate("/login");
         }, 2000);
+      } else {
+        console.error("[RegisterPage] No se recibió usuario en la respuesta");
+        toastService.error(
+          "No se pudo completar el registro. Intenta nuevamente."
+        );
+        setLoading(false);
       }
-      // El error ya se maneja con toast desde authService
-    } catch (err) {
-      toastService.error(err.message || 'Error al registrar usuario');
-    } finally {
+    } catch (error) {
+      console.error("[RegisterPage] Excepción en registro:", error);
+      toastService.error(
+        error.message || "Error inesperado al registrarse. Intenta nuevamente."
+      );
       setLoading(false);
     }
   };
 
+  if (isAuthenticated) {
+    return null; // Ya se redirige en el useEffect
+  }
+
   return (
-    <div className="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div className="card shadow-lg" style={{ width: '100%', maxWidth: '400px' }}>
-        <div className="card-body p-5">
-          <div className="text-center mb-4">
-            <div className="mb-3 d-flex justify-content-center">
-              <FaUser size={48} style={{ color: '#002f19' }} />
+    <div
+      className="min-h-screen flex items-center justify-center py-12"
+      style={{
+        background:
+          "linear-gradient(to bottom right, #f9fafb, #eff6ff, #eef2ff)",
+      }}
+    >
+      <div className="w-full max-w-md px-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full mb-4">
+              <FaUser className="text-white text-2xl" />
             </div>
-            <h2 className="card-title mb-0">Registro de Usuario</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              Crear Cuenta
+            </h2>
+            <p className="text-gray-600">Regístrate para comenzar</p>
           </div>
-          
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label htmlFor="nombreCompleto" className="form-label d-flex align-items-center">
-                <FaUserTie className="me-2" style={{ color: '#002f19' }} />
-                Nombre Completo
+
+          {/* Form */}
+          <form onSubmit={handleRegister}>
+            <div className="mb-4">
+              <label
+                htmlFor="nombre"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Nombre y Apellidos
               </label>
-              <input
-                type="text"
-                className="form-control"
-                id="nombreCompleto"
-                value={nombreCompleto}
-                onChange={(e) => setNombreCompleto(e.target.value)}
-                disabled={loading}
-                placeholder="Juan Pérez"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaUser className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="nombre"
+                  className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  placeholder="Nombre completo"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
             </div>
 
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label d-flex align-items-center">
-                <FaEnvelope className="me-2" style={{ color: '#002f19' }} />
-                Correo Electrónico
+            <div className="mb-4">
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Email
               </label>
-              <input
-                type="email"
-                className="form-control"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                placeholder="tu@email.com"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaEnvelope className="text-gray-400" />
+                </div>
+                <input
+                  type="email"
+                  id="email"
+                  className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  placeholder="tu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
             </div>
 
-            <div className="mb-3">
-              <label htmlFor="password" className="form-label d-flex align-items-center">
-                <FaLock className="me-2" style={{ color: '#002f19' }} />
+            <div className="mb-4">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
+                Teléfono
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaPhone className="text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  id="phone"
+                  className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  placeholder="Ej: 3001234567"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-gray-700 mb-2"
+              >
                 Contraseña
               </label>
-              <input
-                type="password"
-                className="form-control"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                disabled={loading}
-                placeholder="••••••••"
-              />
-              <small className="form-text text-muted">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaLock className="text-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  id="password"
+                  className="block w-full pl-10 pr-3 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  disabled={loading}
+                />
+              </div>
+              <small className="text-gray-500 text-sm mt-1">
                 Mínimo 6 caracteres
               </small>
             </div>
 
-            <div className="mb-3">
-              <label htmlFor="confirmPassword" className="form-label d-flex align-items-center">
-                <FaLock className="me-2" style={{ color: '#002f19' }} />
-                Confirmar Contraseña
-              </label>
-              <input
-                type="password"
-                className="form-control"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                disabled={loading}
-                placeholder="••••••••"
-              />
-            </div>
-
             <button
               type="submit"
-              className="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center"
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               disabled={loading}
-              style={{ backgroundColor: '#002f19', borderColor: '#002f19' }}
             >
               {loading ? (
-                <span className="d-flex align-items-center">
-                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   <span>Registrando...</span>
-                </span>
+                </>
               ) : (
-                <span className="d-flex align-items-center">
-                  <FaCheck className="me-2" />
-                  <span>Registrarse</span>
-                </span>
+                <>
+                  <FaCheck />
+                  <span>Registrarme</span>
+                </>
               )}
             </button>
-
-            <div className="text-center">
-              <p className="mb-0">
-                ¿Ya tienes cuenta?{' '}
-                <Link to="/login" style={{ color: '#002f19' }}>
-                  Inicia sesión aquí
-                </Link>
-              </p>
-            </div>
           </form>
+
+          {/* Footer */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              ¿Ya tienes cuenta?{" "}
+              <Link
+                to="/login"
+                className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
+              >
+                Inicia sesión
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -173,4 +333,3 @@ const RegisterPage = () => {
 };
 
 export default RegisterPage;
-

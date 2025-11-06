@@ -1,19 +1,32 @@
-// Cliente de Supabase configurado
-import { createClient } from '@supabase/supabase-js';
+// Cliente de Supabase - Singleton simple
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Validar variables de entorno
 if (!supabaseUrl || !supabaseKey) {
-  console.error('[SUPABASE] Error: Variables de entorno no configuradas');
-  console.error('[SUPABASE] VITE_SUPABASE_URL:', supabaseUrl ? '✅' : '❌');
-  console.error('[SUPABASE] VITE_SUPABASE_ANON_KEY:', supabaseKey ? '✅' : '❌');
+  console.error("[SUPABASE] ❌ Variables de entorno no configuradas");
+  console.error("[SUPABASE] VITE_SUPABASE_URL:", supabaseUrl ? "✅" : "❌");
+  console.error(
+    "[SUPABASE] VITE_SUPABASE_ANON_KEY:",
+    supabaseKey ? "✅" : "❌"
+  );
 }
 
+// Crear UNA SOLA instancia de Supabase
 const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseKey || 'placeholder-key'
+  supabaseUrl || "https://placeholder.supabase.co",
+  supabaseKey || "placeholder-key",
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storage: typeof window !== "undefined" ? window.localStorage : undefined,
+      storageKey: "sb-auth-token",
+    },
+  }
 );
 
 export default supabase;
-

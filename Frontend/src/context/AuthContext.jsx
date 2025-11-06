@@ -1,204 +1,206 @@
-// Context de autenticación
-import { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../services/authService';
-import supabase from '../services/supabase';
+import { createContext, useContext, useState, useEffect } from "react";
+import supabase from "../services/supabase";
 
 const AuthContext = createContext(null);
 
-// Función para obtener datos completos del usuario desde la tabla usuarios
-const fetchUserData = async (authUser) => {
-  if (!authUser) return null;
-  
-  // Retornar datos básicos inmediatamente si no hay authUser válido
-  const defaultUserData = {
-    ...authUser,
-    nombre: authUser.email?.split('@')[0] || authUser.email || 'Usuario',
-    rol: 'usuario'
-  };
-  
+// Función para cargar perfil del usuario desde la tabla usuarios
+const loadPerfilUsuario = async (authUser) => {
+  if (!authUser) {
+    return null;
+  }
+
   try {
-    // Intentar obtener datos del usuario
-    // Si hay error de políticas RLS o timeout, retornar datos básicos inmediatamente
-    const { data: usuarioData, error } = await supabase
-      .from('usuarios')
-      .select('*')
-      .eq('id', authUser.id)
-      .single()
-    
+    // Timeout para evitar que se quede colgado
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Timeout al cargar perfil")), 5000)
+    );
+
+    const fetchPromise = (async () => {
+      const result = await supabase
+        .from("usuarios")
+        .select("*")
+        .eq("id", authUser.id)
+        .single();
+      return result;
+    })();
+
+    const { data: perfil, error } = await Promise.race([
+      fetchPromise,
+      timeoutPromise,
+    ]);
+
     if (error) {
-      // Si el usuario no existe en la tabla usuarios (error PGRST116)
-      if (error.code === 'PGRST116' || error.message?.includes('No rows') || error.message?.includes('not found')) {
-        console.warn('Usuario no encontrado en tabla usuarios, usando datos básicos');
-        // Intentar insertar un registro básico (sin esperar resultado - no bloqueante)
-        supabase
-          .from('usuarios')
-          .insert({
-            id: authUser.id,
-            nombre: authUser.email?.split('@')[0] || 'Usuario',
-            rol: 'usuario',
-            activo: true
-          })
-          .then(({ error: insertError }) => {
-            if (insertError) {
-              console.warn('No se pudo insertar usuario en tabla usuarios:', insertError);
-            }
-          })
-          .catch(() => {
-            // Ignorar errores de inserción
-          });
-        
-        // Retornar datos básicos inmediatamente (no esperar inserción)
-        return defaultUserData;
+      console.warn("[AuthContext] Error al cargar perfil:", error);
+      // Si no existe en usuarios, crear uno por defecto
+      if (error.code === "PGRST116") {
+        console.log(
+          "[AuthContext] Usuario no existe en tabla usuarios, creando..."
+        );
+        try {
+          const { data: newUser, error: insertError } = await supabase
+            .from("usuarios")
+            .insert({
+              id: authUser.id,
+              nombre:
+                authUser.user_metadata?.nombre ||
+                authUser.email?.split("@")[0] ||
+                "Usuario",
+              rol: "usuario",
+              activo: true,
+            })
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error("[AuthContext] Error al crear usuario:", insertError);
+          } else if (newUser) {
+            console.log("[AuthContext] Usuario creado exitosamente:", newUser);
+            return { ...authUser, ...newUser };
+          }
+        } catch (insertErr) {
+          console.error("[AuthContext] Excepción al crear usuario:", insertErr);
+        }
       }
-      
-      // Cualquier otro error (políticas RLS, timeout, etc.) - retornar datos básicos
-      console.warn('Error al obtener datos del usuario, usando datos básicos:', error.message || error);
-      return defaultUserData;
-    }
-    
-    // Si se obtuvieron datos correctamente
-    if (usuarioData) {
+      // Retornar usuario básico si no se puede obtener perfil (no bloquea el login)
       return {
         ...authUser,
-        nombre: usuarioData.nombre || authUser.email?.split('@')[0] || 'Usuario',
-        rol: usuarioData.rol || 'usuario',
-        usuarioData: usuarioData,
+        nombre:
+          authUser.user_metadata?.nombre ||
+          authUser.email?.split("@")[0] ||
+          "Usuario",
+        rol: "usuario",
       };
     }
-    
-    // Si no hay datos pero no hay error, retornar datos básicos
-    return defaultUserData;
+
+    if (perfil) {
+      return { ...authUser, ...perfil };
+    }
+
+    return {
+      ...authUser,
+      nombre:
+        authUser.user_metadata?.nombre ||
+        authUser.email?.split("@")[0] ||
+        "Usuario",
+      rol: "usuario",
+    };
   } catch (error) {
-    // Cualquier excepción - retornar datos básicos inmediatamente
-    console.warn('Error en fetchUserData, usando datos básicos:', error.message || error);
-    return defaultUserData;
+    console.error("[AuthContext] Error en loadPerfilUsuario:", error);
+    // Retornar usuario básico en caso de error (no bloquea el login)
+    return {
+      ...authUser,
+      nombre:
+        authUser.user_metadata?.nombre ||
+        authUser.email?.split("@")[0] ||
+        "Usuario",
+      rol: "usuario",
+    };
   }
 };
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar sesión actual
-    const checkSession = async () => {
-      try {
-        const session = await authService.getSession();
-        if (session?.user) {
-          const userData = await fetchUserData(session.user);
-          setUser(userData);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Error checking session:', error);
-      } finally {
+    // Verificar sesión inicial
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        loadPerfilUsuario(data.user).then((perfil) => {
+          if (perfil) {
+            setUser(perfil);
+            setIsAuthenticated(true);
+          }
+          setLoading(false);
+        });
+      } else {
         setLoading(false);
       }
-    };
-
-    checkSession();
+    });
 
     // Escuchar cambios de autenticación
-    const { data: { subscription } } = authService.onAuthStateChange(async (event, session) => {
-      try {
-        if (session?.user) {
-          // fetchUserData siempre retorna datos (nunca null) gracias a manejo de errores robusto
-          const userData = await fetchUserData(session.user);
-          setUser(userData);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Error en onAuthStateChange:', error);
-        // Si hay error pero hay sesión, usar datos básicos
-        if (session?.user) {
-          setUser({
-            ...session.user,
-            nombre: session.user.email?.split('@')[0] || 'Usuario',
-            rol: 'usuario'
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log(
+        "[AuthContext] Auth state changed:",
+        event,
+        session?.user?.id
+      );
+
+      if (session?.user) {
+        // Establecer autenticación inmediatamente para no bloquear la navegación
+        setIsAuthenticated(true);
+
+        // Cargar perfil en segundo plano (no bloqueante)
+        loadPerfilUsuario(session.user)
+          .then((perfil) => {
+            if (perfil) {
+              setUser(perfil);
+              console.log("[AuthContext] Perfil cargado:", perfil);
+            } else {
+              // Si no se puede cargar el perfil, usar datos básicos
+              setUser({
+                ...session.user,
+                nombre:
+                  session.user.user_metadata?.nombre ||
+                  session.user.email?.split("@")[0] ||
+                  "Usuario",
+                rol: "usuario",
+              });
+              console.warn("[AuthContext] Usando datos básicos del usuario");
+            }
+          })
+          .catch((error) => {
+            console.error("[AuthContext] Error al cargar perfil:", error);
+            // Usar datos básicos en caso de error
+            setUser({
+              ...session.user,
+              nombre:
+                session.user.user_metadata?.nombre ||
+                session.user.email?.split("@")[0] ||
+                "Usuario",
+              rol: "usuario",
+            });
           });
-        } else {
-          setUser(null);
-        }
-      } finally {
-        setLoading(false);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        console.log("[AuthContext] Usuario desautenticado");
       }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email, password) => {
-    console.log('[AUTH] Iniciando signIn...');
     setLoading(true);
-    
     try {
-      // Hacer login con timeout adicional en el contexto
-      console.log('[AUTH] Llamando authService.signIn...');
-      
-      const signInPromise = authService.signIn(email, password);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout: El inicio de sesión tardó demasiado')), 15000)
-      );
-      
-      const { data, error } = await Promise.race([signInPromise, timeoutPromise]);
-      
-      console.log('[AUTH] Respuesta de authService.signIn recibida:', { hasData: !!data, hasError: !!error });
-      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
       if (error) {
-        console.error('[AUTH] Error en authService.signIn:', error);
-        // El toast ya se muestra desde authService
         setLoading(false);
         return { success: false, error: error.message };
       }
-      
-      if (!data?.user) {
-        console.error('[AUTH] No se obtuvo usuario de authService');
-        setLoading(false);
-        return { success: false, error: 'No se pudo obtener datos del usuario autenticado' };
-      }
-      
-      console.log('[AUTH] Usuario autenticado, obteniendo datos...', data.user.id);
-      
-      // Obtener datos del usuario - fetchUserData siempre retorna algo (nunca null)
-      // Agregar timeout también aquí
-      const fetchUserDataPromise = fetchUserData(data.user);
-      const fetchTimeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout al obtener datos del usuario')), 10000)
-      );
-      
-      const userData = await Promise.race([fetchUserDataPromise, fetchTimeoutPromise]);
-      
-      console.log('[AUTH] Datos del usuario obtenidos:', userData ? 'OK' : 'NULL');
-      
-      // Establecer usuario y finalizar carga
-      setUser(userData);
-      setLoading(false);
-      
-      console.log('[AUTH] signIn completado exitosamente');
-      return { success: true };
-    } catch (error) {
-      // El toast ya se muestra desde authService
-      console.error('[AUTH] Excepción en signIn:', error);
-      
-      // Si hay error pero el usuario está autenticado, usar datos básicos
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          console.log('[AUTH] Usando datos básicos del usuario autenticado');
-          setUser({
-            ...user,
-            nombre: user.email?.split('@')[0] || 'Usuario',
-            rol: 'usuario'
-          });
-          setLoading(false);
-          return { success: true }; // Aún así retornar éxito si tenemos usuario
+
+      if (data?.user) {
+        const perfil = await loadPerfilUsuario(data.user);
+        if (perfil) {
+          setUser(perfil);
+          setIsAuthenticated(true);
         }
-      } catch (secondaryError) {
-        console.error('[AUTH] Error secundario al obtener usuario:', secondaryError);
+        setLoading(false);
+        return { success: true };
       }
-      
+
+      setLoading(false);
+      return { success: false, error: "Error al iniciar sesión" };
+    } catch (error) {
       setLoading(false);
       return { success: false, error: error.message };
     }
@@ -206,25 +208,15 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await authService.signOut();
-      if (error) throw error;
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        return { success: false, error: error.message };
+      }
       setUser(null);
+      setIsAuthenticated(false);
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
-    }
-  };
-
-  // Función para verificar si el usuario es administrador
-  const isAdmin = () => {
-    return user?.rol === 'administrador';
-  };
-
-  // Función para refrescar datos del usuario
-  const refreshUser = async () => {
-    if (user?.id) {
-      const userData = await fetchUserData(user);
-      setUser(userData);
     }
   };
 
@@ -233,9 +225,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     signIn,
     signOut,
-    isAuthenticated: !!user,
-    isAdmin: isAdmin(),
-    refreshUser,
+    isAuthenticated,
+    isAdmin: user?.rol === "administrador",
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -244,8 +235,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuthContext = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuthContext must be used within AuthProvider');
+    throw new Error("useAuthContext must be used within AuthProvider");
   }
   return context;
 };
-

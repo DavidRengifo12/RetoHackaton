@@ -1,10 +1,11 @@
 // Página de administración de usuarios (solo para administradores)
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuthContext } from '../context/AuthContext';
-import { userService } from '../services/userService';
-import { toastService } from '../utils/toastService';
-import Loading from '../components/common/Loading';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../context/AuthContext";
+import { userService } from "../services/userService";
+import { toastService } from "../utils/toastService";
+import Loading from "../components/common/Loading";
+import { FaUsers, FaUserPlus } from "react-icons/fa";
 
 const AdminUsersPage = () => {
   const { user, isAdmin, loading: authLoading } = useAuthContext();
@@ -16,18 +17,18 @@ const AdminUsersPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    nombre: '',
-    rol: 'usuario',
-    telefono: '',
+    email: "",
+    password: "",
+    nombre: "",
+    rol: "usuario",
+    telefono: "",
   });
 
   // Verificar permisos
   useEffect(() => {
     if (!authLoading && !isAdmin) {
-      toastService.error('No tienes permisos para acceder a esta página');
-      navigate('/dashboard');
+      toastService.error("No tienes permisos para acceder a esta página");
+      navigate("/dashboard");
     }
   }, [isAdmin, authLoading, navigate]);
 
@@ -50,10 +51,10 @@ const AdminUsersPage = () => {
       if (rolesResult.data) {
         setRoles(rolesResult.data);
         // Establecer rol por defecto (usuario)
-        setFormData(prev => ({ ...prev, rol: 'usuario' }));
+        setFormData((prev) => ({ ...prev, rol: "usuario" }));
       }
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error("Error loading data:", error);
     } finally {
       setLoading(false);
     }
@@ -61,9 +62,9 @@ const AdminUsersPage = () => {
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
-      toastService.error('Email y contraseña son requeridos');
+      toastService.error("Email y contraseña son requeridos");
       return;
     }
 
@@ -77,7 +78,7 @@ const AdminUsersPage = () => {
 
   const handleUpdateUser = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedUser) return;
 
     const updates = {
@@ -96,7 +97,13 @@ const AdminUsersPage = () => {
   };
 
   const handleToggleStatus = async (userId, currentStatus) => {
-    if (window.confirm(`¿Estás seguro de ${currentStatus ? 'desactivar' : 'activar'} este usuario?`)) {
+    if (
+      window.confirm(
+        `¿Estás seguro de ${
+          currentStatus ? "desactivar" : "activar"
+        } este usuario?`
+      )
+    ) {
       await userService.toggleUserStatus(userId, !currentStatus);
       loadData();
     }
@@ -106,21 +113,21 @@ const AdminUsersPage = () => {
     setSelectedUser(userToEdit);
     setFormData({
       email: userToEdit.email,
-      password: '',
-      nombre: userToEdit.nombre || '',
-      rol: userToEdit.rol || 'usuario',
-      telefono: userToEdit.telefono || '',
+      password: "",
+      nombre: userToEdit.nombre || "",
+      rol: userToEdit.rol || "usuario",
+      telefono: userToEdit.telefono || "",
     });
     setShowEditModal(true);
   };
 
   const resetForm = () => {
     setFormData({
-      email: '',
-      password: '',
-      nombre: '',
-      rol: 'usuario',
-      telefono: '',
+      email: "",
+      password: "",
+      nombre: "",
+      rol: "usuario",
+      telefono: "",
     });
   };
 
@@ -133,88 +140,121 @@ const AdminUsersPage = () => {
   }
 
   return (
-    <div className="container-fluid py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h3">👥 Administración de Usuarios</h1>
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            resetForm();
-            setShowCreateModal(true);
-          }}
-          style={{ backgroundColor: '#002f19', borderColor: '#002f19' }}
-        >
-          ➕ Crear Usuario
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Header Moderno */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
+        <div className="container-fluid px-4 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 flex items-center">
+                <FaUsers className="mr-3" />
+                Administración de Usuarios
+              </h1>
+              <p className="text-blue-100 text-lg">
+                Gestiona usuarios y permisos del sistema
+              </p>
+            </div>
+            <button
+              className="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+              onClick={() => {
+                resetForm();
+                setShowCreateModal(true);
+              }}
+            >
+              <FaUserPlus />
+              Crear Usuario
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="card shadow">
-        <div className="card-body">
-          <div className="table-responsive">
-            <table className="table table-hover">
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Email</th>
-                  <th>Rol</th>
-                  <th>Teléfono</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.length === 0 ? (
+      <div className="container-fluid px-4 py-6">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="p-6">
+            <div className="table-responsive">
+              <table className="table table-hover">
+                <thead>
                   <tr>
-                    <td colSpan="6" className="text-center text-muted">
-                      No hay usuarios registrados
-                    </td>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Teléfono</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
                   </tr>
-                ) : (
-                  users.map((u) => (
-                    <tr key={u.id}>
-                      <td>{u.nombre || u.email}</td>
-                      <td>{u.email}</td>
-                      <td>
-                        <span className={`badge ${u.rol === 'administrador' ? 'bg-danger' : 'bg-secondary'}`}>
-                          {u.rol || 'usuario'}
-                        </span>
-                      </td>
-                      <td>{u.telefono || '-'}</td>
-                      <td>
-                        <span className={`badge ${u.activo ? 'bg-success' : 'bg-danger'}`}>
-                          {u.activo ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="btn-group" role="group">
-                          <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => handleEdit(u)}
-                            title="Editar"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            className={`btn btn-sm ${u.activo ? 'btn-outline-danger' : 'btn-outline-success'}`}
-                            onClick={() => handleToggleStatus(u.id, u.activo)}
-                            title={u.activo ? 'Desactivar' : 'Activar'}
-                          >
-                            {u.activo ? '🚫' : '✅'}
-                          </button>
-                        </div>
+                </thead>
+                <tbody>
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center text-muted">
+                        No hay usuarios registrados
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    users.map((u) => (
+                      <tr key={u.id}>
+                        <td>{u.nombre || u.email}</td>
+                        <td>{u.email}</td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              u.rol === "administrador"
+                                ? "bg-danger"
+                                : "bg-secondary"
+                            }`}
+                          >
+                            {u.rol || "usuario"}
+                          </span>
+                        </td>
+                        <td>{u.telefono || "-"}</td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              u.activo ? "bg-success" : "bg-danger"
+                            }`}
+                          >
+                            {u.activo ? "Activo" : "Inactivo"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="btn-group" role="group">
+                            <button
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => handleEdit(u)}
+                              title="Editar"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              className={`btn btn-sm ${
+                                u.activo
+                                  ? "btn-outline-danger"
+                                  : "btn-outline-success"
+                              }`}
+                              onClick={() => handleToggleStatus(u.id, u.activo)}
+                              title={u.activo ? "Desactivar" : "Activar"}
+                            >
+                              {u.activo ? "🚫" : "✅"}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Modal para crear usuario */}
       {showCreateModal && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
@@ -236,7 +276,9 @@ const AdminUsersPage = () => {
                       type="text"
                       className="form-control"
                       value={formData.nombre}
-                      onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nombre: e.target.value })
+                      }
                     />
                   </div>
                   <div className="mb-3">
@@ -245,7 +287,9 @@ const AdminUsersPage = () => {
                       type="email"
                       className="form-control"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, email: e.target.value })
+                      }
                       required
                     />
                   </div>
@@ -255,18 +299,24 @@ const AdminUsersPage = () => {
                       type="password"
                       className="form-control"
                       value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, password: e.target.value })
+                      }
                       required
                       minLength={6}
                     />
-                    <small className="form-text text-muted">Mínimo 6 caracteres</small>
+                    <small className="form-text text-muted">
+                      Mínimo 6 caracteres
+                    </small>
                   </div>
                   <div className="mb-3">
                     <label className="form-label">Rol</label>
                     <select
                       className="form-select"
                       value={formData.rol_id}
-                      onChange={(e) => setFormData({ ...formData, rol_id: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, rol_id: e.target.value })
+                      }
                     >
                       {roles.map((role) => (
                         <option key={role.id} value={role.id}>
@@ -281,7 +331,9 @@ const AdminUsersPage = () => {
                       type="tel"
                       className="form-control"
                       value={formData.telefono}
-                      onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, telefono: e.target.value })
+                      }
                     />
                   </div>
                 </div>
@@ -299,7 +351,10 @@ const AdminUsersPage = () => {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    style={{ backgroundColor: '#002f19', borderColor: '#002f19' }}
+                    style={{
+                      backgroundColor: "#002f19",
+                      borderColor: "#002f19",
+                    }}
                   >
                     Crear Usuario
                   </button>
@@ -312,7 +367,11 @@ const AdminUsersPage = () => {
 
       {/* Modal para editar usuario */}
       {showEditModal && selectedUser && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
@@ -337,7 +396,9 @@ const AdminUsersPage = () => {
                       value={formData.email}
                       disabled
                     />
-                    <small className="form-text text-muted">El email no se puede modificar</small>
+                    <small className="form-text text-muted">
+                      El email no se puede modificar
+                    </small>
                   </div>
                   <div className="mb-3">
                     <label className="form-label">Nombre</label>
@@ -345,7 +406,9 @@ const AdminUsersPage = () => {
                       type="text"
                       className="form-control"
                       value={formData.nombre}
-                      onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nombre: e.target.value })
+                      }
                     />
                   </div>
                   <div className="mb-3">
@@ -353,7 +416,9 @@ const AdminUsersPage = () => {
                     <select
                       className="form-select"
                       value={formData.rol}
-                      onChange={(e) => setFormData({ ...formData, rol: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, rol: e.target.value })
+                      }
                     >
                       {roles.map((role) => (
                         <option key={role.nombre} value={role.nombre}>
@@ -368,7 +433,9 @@ const AdminUsersPage = () => {
                       type="tel"
                       className="form-control"
                       value={formData.telefono}
-                      onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, telefono: e.target.value })
+                      }
                     />
                   </div>
                 </div>
@@ -387,7 +454,10 @@ const AdminUsersPage = () => {
                   <button
                     type="submit"
                     className="btn btn-primary"
-                    style={{ backgroundColor: '#002f19', borderColor: '#002f19' }}
+                    style={{
+                      backgroundColor: "#002f19",
+                      borderColor: "#002f19",
+                    }}
                   >
                     Guardar Cambios
                   </button>
@@ -402,4 +472,3 @@ const AdminUsersPage = () => {
 };
 
 export default AdminUsersPage;
-

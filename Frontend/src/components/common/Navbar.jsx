@@ -1,7 +1,19 @@
 // Componente de navegación
-import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuthContext } from '../../context/AuthContext';
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuthContext } from "../../context/AuthContext";
+import {
+  FaChartLine,
+  FaBox,
+  FaUpload,
+  FaRobot,
+  FaUsers,
+  FaPlus,
+  FaSignOutAlt,
+  FaUser,
+  FaBars,
+  FaTimes,
+} from "react-icons/fa";
 
 const Navbar = () => {
   const { user, signOut, isAuthenticated, isAdmin } = useAuthContext();
@@ -24,11 +36,11 @@ const Navbar = () => {
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
 
@@ -40,148 +52,214 @@ const Navbar = () => {
     const result = await signOut();
     if (result.success) {
       setIsOpen(false);
-      navigate('/login');
+      navigate("/login");
     }
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-primary" ref={navbarRef}>
+    <nav
+      className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
+      ref={navbarRef}
+    >
       <div className="container-fluid px-3 px-md-4">
-        <Link className="navbar-brand fw-bold" to="/" onClick={() => setIsOpen(false)}>
-          📊 Sistema de Inventario
-        </Link>
-        
-        {/* Menú hamburguesa - Solo visible en móvil/tablet */}
-        <button
-          className="navbar-toggler d-lg-none"
-          type="button"
-          onClick={toggleMenu}
-          aria-controls="navbarNav"
-          aria-expanded={isOpen}
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        
-        {/* Menú desplegable - Solo visible en móvil/tablet */}
-        <div className={`collapse navbar-collapse d-lg-none ${isOpen ? 'show' : ''}`} id="navbarNav">
-          <ul className="navbar-nav ms-auto">
-            {isAuthenticated ? (
-              <>
-                <li className="nav-item">
-                  <Link 
-                    className="nav-link py-2" 
-                    to="/dashboard"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    📊 Dashboard
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link 
-                    className="nav-link py-2" 
-                    to="/inventory"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    📦 Inventario
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link 
-                    className="nav-link py-2" 
-                    to="/upload"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    📤 Cargar Datos
-                  </Link>
-                </li>
-                {isAdmin && (
-                  <>
-                    <li className="nav-item">
-                      <Link 
-                        className="nav-link py-2" 
-                        to="/admin/users"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        👥 Usuarios
-                      </Link>
-                    </li>
-                    <li className="nav-item">
-                      <Link 
-                        className="nav-link py-2" 
-                        to="/products/add"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        ➕ Agregar Producto
-                      </Link>
-                    </li>
-                  </>
-                )}
-                <li className="nav-item">
-                  <span className="nav-link text-white-50 py-2">
-                    <small>{user?.nombre || user?.email}</small>
-                  </span>
-                </li>
-                <li className="nav-item">
-                  <button
-                    className="btn btn-outline-light btn-sm w-100 mt-2"
-                    onClick={handleSignOut}
-                  >
-                    🚪 Cerrar Sesión
-                  </button>
-                </li>
-              </>
-            ) : (
-              <li className="nav-item">
-                <Link 
-                  className="nav-link" 
-                  to="/login"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Iniciar Sesión
-                </Link>
-              </li>
-            )}
-          </ul>
-        </div>
+        <div className="flex items-center justify-between w-full py-4">
+          <Link
+            className="flex items-center gap-2 text-white text-xl font-bold no-underline hover:text-blue-100 transition-colors"
+            to="/"
+            onClick={() => setIsOpen(false)}
+          >
+            <FaChartLine className="text-2xl" />
+            Sistema de Inventario
+          </Link>
 
-        {/* Barra de usuario - Solo visible en pantallas grandes */}
-        {isAuthenticated && (
-          <div className="d-none d-lg-flex align-items-center ms-auto">
-            <Link className="nav-link text-white me-2" to="/dashboard">
-              📊 Dashboard
-            </Link>
-            <Link className="nav-link text-white me-2" to="/inventory">
-              📦 Inventario
-            </Link>
-            <Link className="nav-link text-white me-2" to="/upload">
-              📤 Cargar Datos
-            </Link>
-            {isAdmin && (
-              <>
-                <Link className="nav-link text-white me-2" to="/admin/users">
-                  👥 Usuarios
-                </Link>
-                <Link className="nav-link text-white me-2" to="/products/add">
-                  ➕ Producto
-                </Link>
-              </>
+          {/* Menú hamburguesa - Solo visible en móvil/tablet */}
+          <button
+            className="lg:hidden text-white p-2 hover:bg-white/20 rounded-lg transition-colors"
+            type="button"
+            onClick={toggleMenu}
+            aria-controls="navbarNav"
+            aria-expanded={isOpen}
+            aria-label="Toggle navigation"
+          >
+            {isOpen ? (
+              <FaTimes className="text-2xl" />
+            ) : (
+              <FaBars className="text-2xl" />
             )}
-            <span className="nav-link text-white-50 mb-0 me-3">
-              {user?.nombre || user?.email}
-            </span>
-            <button
-              className="btn btn-outline-light btn-sm"
-              onClick={handleSignOut}
-            >
-              Salir
-            </button>
-          </div>
-        )}
+          </button>
+
+          {/* Menú desplegable - Solo visible en móvil/tablet */}
+          {isOpen && (
+            <div className="absolute top-full left-0 right-0 bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl lg:hidden z-50">
+              <div className="px-4 py-4 space-y-2">
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
+                      to="/dashboard"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <FaChartLine />
+                      Dashboard
+                    </Link>
+                    <Link
+                      className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
+                      to="/inventory"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <FaBox />
+                      Inventario
+                    </Link>
+                    <Link
+                      className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
+                      to="/upload"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <FaUpload />
+                      Cargar Datos
+                    </Link>
+                    <Link
+                      className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
+                      to="/agents"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <FaRobot />
+                      Agentes
+                    </Link>
+                    {isAdmin && (
+                      <>
+                        <Link
+                          className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
+                          to="/admin/users"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <FaUsers />
+                          Usuarios
+                        </Link>
+                        <Link
+                          className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
+                          to="/products/add"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <FaPlus />
+                          Agregar Producto
+                        </Link>
+                      </>
+                    )}
+                    <div className="border-t border-white/20 my-3 pt-3">
+                      <div className="flex items-center gap-3 text-white/80 py-2 px-4">
+                        <FaUser />
+                        <span className="text-sm">
+                          {user?.nombre || user?.email}
+                        </span>
+                      </div>
+                      <button
+                        className="flex items-center gap-3 w-full text-white py-3 px-4 rounded-xl hover:bg-red-500/20 transition-colors border border-white/30 mt-2"
+                        onClick={handleSignOut}
+                      >
+                        <FaSignOutAlt />
+                        Cerrar Sesión
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <Link
+                    className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <FaUser />
+                    Iniciar Sesión
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Barra de usuario - Solo visible en pantallas grandes */}
+          {isAuthenticated && (
+            <div className="hidden lg:flex items-center gap-4">
+              <Link
+                className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
+                to="/dashboard"
+              >
+                <FaChartLine />
+                Dashboard
+              </Link>
+              <Link
+                className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
+                to="/inventory"
+              >
+                <FaBox />
+                Inventario
+              </Link>
+              <Link
+                className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
+                to="/upload"
+              >
+                <FaUpload />
+                Cargar Datos
+              </Link>
+              <Link
+                className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
+                to="/agents"
+              >
+                <FaRobot />
+                Agentes
+              </Link>
+              {isAdmin && (
+                <>
+                  <Link
+                    className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
+                    to="/admin/users"
+                  >
+                    <FaUsers />
+                    Usuarios
+                  </Link>
+                  <Link
+                    className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
+                    to="/products/add"
+                  >
+                    <FaPlus />
+                    Producto
+                  </Link>
+                </>
+              )}
+              <div className="flex items-center gap-3 px-4 py-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                <FaUser className="text-sm" />
+                <span className="text-sm font-medium">
+                  {user?.nombre || user?.email}
+                </span>
+              </div>
+              <button
+                className="flex items-center gap-2 text-white px-4 py-2 rounded-lg hover:bg-red-500/20 transition-colors border border-white/30 text-sm font-medium"
+                onClick={handleSignOut}
+              >
+                <FaSignOutAlt />
+                Salir
+              </button>
+            </div>
+          )}
+          {!isAuthenticated && (
+            <div className="hidden lg:flex items-center gap-3">
+              <Link
+                className="text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
+                to="/login"
+              >
+                Iniciar Sesión
+              </Link>
+              <Link
+                className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors no-underline text-sm font-medium"
+                to="/register"
+              >
+                Registrarse
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
 };
 
 export default Navbar;
-

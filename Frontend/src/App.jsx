@@ -1,21 +1,39 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { AuthProvider, useAuthContext } from './context/AuthContext';
-import Navbar from './components/common/Navbar';
-import ErrorBoundary from './components/common/ErrorBoundary';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import InventoryPage from './pages/InventoryPage';
-import UploadPage from './pages/UploadPage';
-import AdminUsersPage from './pages/AdminUsersPage';
-import AddProductPage from './pages/AddProductPage';
-import LandingPage from './pages/LandingPage';
-import './App.css';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { AuthProvider, useAuthContext } from "./context/AuthContext";
+import Navbar from "./components/common/Navbar";
+import ErrorBoundary from "./components/common/ErrorBoundary";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import DashboardPage from "./pages/DashboardPage";
+import InventoryPage from "./pages/InventoryPage";
+import UploadPage from "./pages/UploadPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
+import AddProductPage from "./pages/AddProductPage";
+import LandingPage from "./pages/LandingPage";
+import ChatInventario from "./components/Chat/ChatInventario";
+import ChatAnalista from "./components/Chat/ChatAnalista";
+import ChatMCP from "./components/Chat/ChatMcp";
+import ChatCliente from "./components/Chat/ChatCliente";
+import AgentsPage from "./pages/AgentsPage";
+import "./App.css";
 
-// Componente para rutas protegidas
-const ProtectedRoute = ({ children }) => {
+function App() {
+  return (
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
+  );
+}
+
+// Componente para rutas protegidas - debe estar dentro de AuthProvider
+function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuthContext();
 
   if (loading) {
@@ -29,10 +47,10 @@ const ProtectedRoute = ({ children }) => {
   }
 
   return isAuthenticated ? children : <Navigate to="/login" replace />;
-};
+}
 
-// Componente principal
-const AppContent = () => {
+// Componente principal con Router - debe estar dentro de AuthProvider
+function AppRouter() {
   const { isAuthenticated } = useAuthContext();
 
   return (
@@ -83,6 +101,14 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/agents"
+            element={
+              <ProtectedRoute>
+                <AgentsPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
         <ToastContainer
           position="top-right"
@@ -98,14 +124,6 @@ const AppContent = () => {
         />
       </ErrorBoundary>
     </Router>
-  );
-};
-
-function App() {
-  return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
   );
 }
 

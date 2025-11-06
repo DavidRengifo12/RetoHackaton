@@ -1,27 +1,28 @@
 // Página para agregar productos individuales
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { productService } from '../services/productService';
-import supabase from '../services/supabase';
-import { toastService } from '../utils/toastService';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { productService } from "../services/productService";
+import supabase from "../services/supabase";
+import { toastService } from "../utils/toastService";
+import { FaPlus, FaArrowLeft } from "react-icons/fa";
 
 const AddProductPage = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    nombre: '',
-    sku: '',
-    categoria_id: '',
-    categoria: '',
-    talla: '',
-    genero: '',
+    nombre: "",
+    sku: "",
+    categoria_id: "",
+    categoria: "",
+    talla: "",
+    genero: "",
     stock: 0,
     stock_minimo: 10,
     precio: 0,
     precio_costo: 0,
-    descripcion: '',
-    imagen_url: '',
+    descripcion: "",
+    imagen_url: "",
     activo: true,
   });
 
@@ -33,11 +34,11 @@ const AddProductPage = () => {
   const loadCategories = async () => {
     try {
       const { data, error } = await supabase
-        .from('categorias')
-        .select('*')
-        .eq('activa', true)
-        .order('nombre', { ascending: true });
-      
+        .from("categorias")
+        .select("*")
+        .eq("activa", true)
+        .order("nombre", { ascending: true });
+
       if (error) throw error;
       setCategories(data || []);
     } catch (error) {
@@ -52,26 +53,28 @@ const AddProductPage = () => {
     try {
       // Validaciones básicas
       if (!formData.nombre) {
-        toastService.error('El nombre del producto es requerido');
+        toastService.error("El nombre del producto es requerido");
         setLoading(false);
         return;
       }
 
       if (formData.stock < 0) {
-        toastService.error('El stock no puede ser negativo');
+        toastService.error("El stock no puede ser negativo");
         setLoading(false);
         return;
       }
 
       if (formData.precio < 0 || formData.precio_costo < 0) {
-        toastService.error('Los precios no pueden ser negativos');
+        toastService.error("Los precios no pueden ser negativos");
         setLoading(false);
         return;
       }
 
       // Si se seleccionó una categoría por ID, usarla
       if (formData.categoria_id && !formData.categoria) {
-        const selectedCategory = categories.find(c => c.id === formData.categoria_id);
+        const selectedCategory = categories.find(
+          (c) => c.id === formData.categoria_id
+        );
         if (selectedCategory) {
           formData.categoria = selectedCategory.nombre;
         }
@@ -79,38 +82,41 @@ const AddProductPage = () => {
 
       // Generar SKU automático si no se proporciona
       if (!formData.sku) {
-        const prefix = formData.nombre.substring(0, 3).toUpperCase().replace(/\s/g, '');
+        const prefix = formData.nombre
+          .substring(0, 3)
+          .toUpperCase()
+          .replace(/\s/g, "");
         const random = Math.floor(Math.random() * 1000);
         formData.sku = `${prefix}-${random}`;
       }
 
       const result = await productService.createProduct(formData);
-      
+
       if (!result.error) {
         // Resetear formulario
         setFormData({
-          nombre: '',
-          sku: '',
-          categoria_id: '',
-          categoria: '',
-          talla: '',
-          genero: '',
+          nombre: "",
+          sku: "",
+          categoria_id: "",
+          categoria: "",
+          talla: "",
+          genero: "",
           stock: 0,
           stock_minimo: 10,
           precio: 0,
           precio_costo: 0,
-          descripcion: '',
-          imagen_url: '',
+          descripcion: "",
+          imagen_url: "",
           activo: true,
         });
-        
+
         // Opción: redirigir a inventario o mostrar mensaje
         setTimeout(() => {
-          navigate('/inventory');
+          navigate("/inventory");
         }, 1500);
       }
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error("Error creating product:", error);
     } finally {
       setLoading(false);
     }
@@ -118,28 +124,47 @@ const AddProductPage = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (type === 'number' ? parseFloat(value) || 0 : value)
+      [name]:
+        type === "checkbox"
+          ? checked
+          : type === "number"
+          ? parseFloat(value) || 0
+          : value,
     }));
   };
 
   return (
-    <div className="container-fluid py-4">
-      <div className="row">
-        <div className="col-lg-8 mx-auto">
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h1 className="h3">➕ Agregar Nuevo Producto</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Header Moderno */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
+        <div className="container-fluid px-4 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-bold mb-2 flex items-center">
+                <FaPlus className="mr-3" />
+                Agregar Nuevo Producto
+              </h1>
+              <p className="text-blue-100 text-lg">
+                Registra un nuevo producto en tu inventario
+              </p>
+            </div>
             <button
-              className="btn btn-outline-secondary"
-              onClick={() => navigate('/inventory')}
+              className="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+              onClick={() => navigate("/inventory")}
             >
-              ← Volver al Inventario
+              <FaArrowLeft />
+              Volver al Inventario
             </button>
           </div>
+        </div>
+      </div>
 
-          <div className="card shadow">
-            <div className="card-body p-4">
+      <div className="container-fluid px-4 py-6">
+        <div className="row">
+          <div className="col-lg-8 mx-auto">
+            <div className="bg-white rounded-2xl shadow-lg p-8">
               <form onSubmit={handleSubmit}>
                 <div className="row">
                   {/* Nombre del Producto */}
@@ -369,11 +394,17 @@ const AddProductPage = () => {
                     type="submit"
                     className="btn btn-primary"
                     disabled={loading}
-                    style={{ backgroundColor: '#002f19', borderColor: '#002f19' }}
+                    style={{
+                      backgroundColor: "#002f19",
+                      borderColor: "#002f19",
+                    }}
                   >
                     {loading ? (
                       <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        ></span>
                         Guardando...
                       </>
                     ) : (
@@ -386,7 +417,7 @@ const AddProductPage = () => {
                   <button
                     type="button"
                     className="btn btn-secondary"
-                    onClick={() => navigate('/inventory')}
+                    onClick={() => navigate("/inventory")}
                   >
                     Cancelar
                   </button>
@@ -401,4 +432,3 @@ const AddProductPage = () => {
 };
 
 export default AddProductPage;
-
