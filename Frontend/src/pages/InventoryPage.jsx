@@ -166,7 +166,7 @@ const InventoryPage = () => {
                   <table className="table table-hover table-custom">
                     <thead>
                       <tr>
-                        <th>Nombre</th>
+                        <th style={{ width: "200px" }}>Nombre</th>
                         <th>Categoría</th>
                         <th>Talla</th>
                         <th>Género</th>
@@ -191,7 +191,57 @@ const InventoryPage = () => {
                       ) : (
                         filteredProducts.map((product) => (
                           <tr key={product.id}>
-                            <td>{product.nombre}</td>
+                            <td>
+                              <div className="d-flex align-items-center gap-2">
+                                {/* Imagen del producto */}
+                                <div
+                                  style={{
+                                    width: "50px",
+                                    height: "50px",
+                                    borderRadius: "6px",
+                                    overflow: "hidden",
+                                    flexShrink: 0,
+                                    backgroundColor: "#f0f0f0",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  {product.imagen_url ? (
+                                    <img
+                                      src={product.imagen_url}
+                                      alt={product.nombre}
+                                      style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        objectFit: "cover",
+                                      }}
+                                      onError={(e) => {
+                                        e.target.style.display = "none";
+                                        e.target.nextSibling.style.display =
+                                          "flex";
+                                      }}
+                                    />
+                                  ) : null}
+                                  <div
+                                    style={{
+                                      display: product.imagen_url
+                                        ? "none"
+                                        : "flex",
+                                      width: "100%",
+                                      height: "100%",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      color: "#999",
+                                      fontSize: "20px",
+                                    }}
+                                  >
+                                    📦
+                                  </div>
+                                </div>
+                                <span>{product.nombre}</span>
+                              </div>
+                            </td>
                             <td>
                               <span className="badge bg-secondary">
                                 {product.categoria || "N/A"}

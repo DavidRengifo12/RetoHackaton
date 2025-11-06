@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuthContext } from "../context/AuthContext";
 import ChatInventario from "../components/Chat/ChatInventario";
 import ChatAnalista from "../components/Chat/ChatAnalista";
 import ChatMCP from "../components/Chat/ChatMcp";
@@ -8,11 +9,15 @@ import { FaRobot } from "react-icons/fa";
 /**
  * 🎯 Página de Presentación de Agentes
  * Organiza todos los agentes por rol con presentación bonita
+ * - Usuarios: Solo ven Agente Cliente
+ * - Administradores: Ven todos los agentes
  */
 export default function AgentsPage() {
+  const { isAdmin } = useAuthContext();
   const [agenteActivo, setAgenteActivo] = useState("overview");
 
-  const agentes = {
+  // Agentes disponibles según el rol
+  const agentesAdmin = {
     inventario: {
       icon: "🧠",
       nombre: "Agente de Inventario",
@@ -43,6 +48,20 @@ export default function AgentsPage() {
     },
   };
 
+  const agentesUsuario = {
+    cliente: {
+      icon: "💬",
+      nombre: "Asistente Virtual",
+      descripcion:
+        "Tu asistente personal para consultas sobre productos y compras",
+      color: "purple",
+      componente: <ChatCliente />,
+    },
+  };
+
+  // Seleccionar agentes según el rol
+  const agentes = isAdmin ? agentesAdmin : agentesUsuario;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header Moderno */}
@@ -64,7 +83,11 @@ export default function AgentsPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Overview Cards */}
         {agenteActivo === "overview" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div
+            className={`grid grid-cols-1 md:grid-cols-2 ${
+              isAdmin ? "lg:grid-cols-4" : "lg:grid-cols-1"
+            } gap-6 mb-8`}
+          >
             {Object.entries(agentes).map(([key, agente]) => (
               <div
                 key={key}
@@ -132,8 +155,8 @@ export default function AgentsPage() {
           </div>
         )}
 
-        {/* Información del Sistema */}
-        {agenteActivo === "overview" && (
+        {/* Información del Sistema - Solo para administradores */}
+        {agenteActivo === "overview" && isAdmin && (
           <div className="bg-white rounded-xl shadow-lg p-8 mt-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               📋 Arquitectura del Sistema
@@ -175,6 +198,30 @@ export default function AgentsPage() {
                   <li>✅ Detección automática de stock bajo</li>
                 </ul>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Información para usuarios */}
+        {agenteActivo === "overview" && !isAdmin && (
+          <div className="bg-white rounded-xl shadow-lg p-8 mt-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              💬 Tu Asistente Virtual
+            </h2>
+            <div className="text-gray-600">
+              <p className="mb-4">
+                Tu asistente virtual está aquí para ayudarte con todas tus
+                consultas sobre productos, disponibilidad, precios y más.
+              </p>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                ✨ ¿Qué puedes hacer?
+              </h3>
+              <ul className="space-y-2">
+                <li>✅ Buscar productos disponibles</li>
+                <li>✅ Consultar información de productos</li>
+                <li>✅ Obtener ayuda con tus compras</li>
+                <li>✅ Resolver dudas sobre el catálogo</li>
+              </ul>
             </div>
           </div>
         )}

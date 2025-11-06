@@ -1,4 +1,5 @@
 # 📊 Base de Datos - Sistema de Inventario
+
 ## Hackatón de Programación 2025
 
 Este directorio contiene los scripts SQL necesarios para configurar la base de datos en Supabase.
@@ -8,9 +9,11 @@ Este directorio contiene los scripts SQL necesarios para configurar la base de d
 ## 📁 Archivos
 
 ### `01_tablas.sql` ⭐ **Primer paso**
+
 **Archivo de estructura de tablas**
 
 Contiene:
+
 - ✅ Extensión UUID
 - ✅ Todas las tablas del sistema (roles_usuario, usuarios, categorias, clientes, productos, ventas, movimientos_inventario, recomendaciones)
 - ✅ Índices para optimización
@@ -20,9 +23,11 @@ Contiene:
 **Ejecutar primero este archivo.**
 
 ### `02_triggers.sql` ⭐ **Segundo paso**
+
 **Archivo de funciones y triggers automáticos**
 
 Contiene:
+
 - ✅ Funciones auxiliares (actualizar_timestamp, generar_numero_venta, registrar_movimiento_inventario, crear_usuario_comun)
 - ✅ Triggers automáticos para actualización de timestamps
 - ✅ Trigger para generación de números de venta
@@ -32,9 +37,11 @@ Contiene:
 **Ejecutar después de 01_tablas.sql**
 
 ### `03_policies.sql` ⭐ **Tercer paso**
+
 **Archivo de políticas RLS (Row Level Security)**
 
 Contiene:
+
 - ✅ Habilitación de RLS en todas las tablas
 - ✅ Políticas de seguridad para usuarios autenticados
 - ✅ Control de acceso por roles
@@ -42,15 +49,53 @@ Contiene:
 **Ejecutar después de 02_triggers.sql**
 
 ### `04_datos_ejemplo.sql` ⭐ **Cuarto paso**
+
 **Archivo de datos de ejemplo**
 
 Contiene:
+
 - ✅ Inserción de productos de ejemplo (20+ productos)
 - ✅ Inserción de clientes de ejemplo (10 clientes)
 - ✅ Inserción de ventas de ejemplo (20+ ventas distribuidas en los últimos 30 días)
-- ✅ Inserción de recomendaciones de ejemplo
 
 **Ejecutar después de 03_policies.sql**
+
+### `05_agregar_saldo_usuarios.sql` ⭐ **Quinto paso (opcional)**
+
+**Agregar campo saldo a usuarios**
+
+Contiene:
+
+- ✅ Agregar columna `saldo` a la tabla `usuarios`
+- ✅ Actualizar usuarios existentes con saldo inicial de $100,000
+- ✅ Índice para búsquedas por saldo
+
+**Ejecutar después de 04_datos_ejemplo.sql (si necesitas funcionalidad de pagos)**
+
+### `06_crear_bucket_storage.sql` ⭐ **Sexto paso (opcional)**
+
+**Crear bucket de storage para imágenes**
+
+Contiene:
+
+- ✅ Creación del bucket "productos" en Supabase Storage
+- ✅ Configuración de límites de tamaño (5MB)
+- ✅ Tipos MIME permitidos (JPEG, PNG, WEBP)
+
+**Ejecutar después de 05_agregar_saldo_usuarios.sql (si necesitas subir imágenes)**
+
+### `07_politicas_storage.sql` ⭐ **Séptimo paso (opcional)**
+
+**Políticas RLS para Storage**
+
+Contiene:
+
+- ✅ Política de lectura pública (todos pueden ver imágenes)
+- ✅ Política de escritura (solo usuarios autenticados pueden subir)
+- ✅ Política de actualización (solo usuarios autenticados)
+- ✅ Política de eliminación (solo usuarios autenticados)
+
+**Ejecutar DESPUÉS de 06_crear_bucket_storage.sql (OBLIGATORIO si usas storage)**
 
 ---
 
@@ -67,28 +112,50 @@ Contiene:
 **IMPORTANTE**: Ejecutar los scripts en el orden indicado:
 
 1. **Ejecutar `01_tablas.sql`**:
+
    - Ve a **SQL Editor** en tu proyecto de Supabase
    - Copia y pega todo el contenido de `01_tablas.sql`
    - Haz clic en **Run** o presiona `Ctrl + Enter`
    - Verifica que no haya errores
 
 2. **Ejecutar `02_triggers.sql`**:
+
    - En el mismo SQL Editor
    - Copia y pega todo el contenido de `02_triggers.sql`
    - Haz clic en **Run**
    - Verifica que no haya errores
 
 3. **Ejecutar `03_policies.sql`**:
+
    - En el mismo SQL Editor
    - Copia y pega todo el contenido de `03_policies.sql`
    - Haz clic en **Run**
    - Verifica que no haya errores
 
 4. **Ejecutar `04_datos_ejemplo.sql`**:
+
    - En el mismo SQL Editor
    - Copia y pega todo el contenido de `04_datos_ejemplo.sql`
    - Haz clic en **Run**
    - Verifica que los datos se insertaron correctamente
+
+5. **Ejecutar `05_agregar_saldo_usuarios.sql`** (opcional, solo si necesitas pagos):
+
+   - En el mismo SQL Editor
+   - Copia y pega todo el contenido de `05_agregar_saldo_usuarios.sql`
+   - Haz clic en **Run**
+
+6. **Ejecutar `06_crear_bucket_storage.sql`** (opcional, solo si necesitas subir imágenes):
+
+   - En el mismo SQL Editor
+   - Copia y pega todo el contenido de `06_crear_bucket_storage.sql`
+   - Haz clic en **Run**
+
+7. **Ejecutar `07_politicas_storage.sql`** (OBLIGATORIO si ejecutaste el paso 6):
+   - En el mismo SQL Editor
+   - Copia y pega todo el contenido de `07_politicas_storage.sql`
+   - Haz clic en **Run**
+   - **IMPORTANTE**: Este script es necesario para que los usuarios puedan subir imágenes
 
 ### Paso 3: Verificar Implementación
 
@@ -102,9 +169,9 @@ SELECT * FROM roles_usuario;
 SELECT * FROM categorias;
 
 -- Verificar tablas creadas
-SELECT table_name 
-FROM information_schema.tables 
-WHERE table_schema = 'public' 
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
 ORDER BY table_name;
 
 -- Verificar productos
@@ -139,6 +206,7 @@ SELECT COUNT(*) as total_movimientos FROM movimientos_inventario;
 Todas las tablas tienen **Row Level Security (RLS)** habilitado con políticas para usuarios autenticados.
 
 ### Políticas Implementadas
+
 - ✅ **SELECT**: Usuarios autenticados pueden ver registros
 - ✅ **INSERT**: Usuarios autenticados pueden insertar registros
 - ✅ **UPDATE**: Usuarios autenticados pueden actualizar registros
@@ -149,16 +217,19 @@ Todas las tablas tienen **Row Level Security (RLS)** habilitado con políticas p
 ## 🔧 Triggers Automáticos
 
 ### 1. Asignación de Rol al Registrarse
+
 - **Cuándo**: Al crear un usuario en `auth.users`
 - **Qué hace**: Asigna automáticamente el rol "usuario común"
 - **Trigger**: `trigger_crear_usuario_comun`
 
 ### 2. Actualización de Stock
+
 - **Cuándo**: Al crear una nueva venta
 - **Qué hace**: Actualiza automáticamente el stock del producto y registra el movimiento
 - **Trigger**: `trigger_procesar_venta_inventario`
 
 ### 3. Generación de Número de Venta
+
 - **Cuándo**: Al crear una nueva venta sin número
 - **Qué hace**: Genera un número único (formato: `VENTA-YYYYMMDD-XXXXXX`)
 - **Trigger**: `trigger_generar_numero_venta`
@@ -176,12 +247,14 @@ Todas las tablas tienen **Row Level Security (RLS)** habilitado con políticas p
 ## 🔗 Integración con Frontend
 
 ### Variables de Entorno
+
 ```env
 VITE_SUPABASE_URL=tu_url_de_supabase
 VITE_SUPABASE_ANON_KEY=tu_clave_anonima
 ```
 
 ### Instalación de Toasts
+
 ```bash
 npm install react-toastify
 ```

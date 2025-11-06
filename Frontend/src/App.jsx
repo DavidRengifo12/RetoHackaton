@@ -17,6 +17,7 @@ import UploadPage from "./pages/UploadPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AddProductPage from "./pages/AddProductPage";
 import LandingPage from "./pages/LandingPage";
+import ShopPage from "./pages/ShopPage";
 import ChatInventario from "./components/Chat/ChatInventario";
 import ChatAnalista from "./components/Chat/ChatAnalista";
 import ChatMCP from "./components/Chat/ChatMcp";
@@ -49,6 +50,31 @@ function ProtectedRoute({ children }) {
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
+// Componente para rutas solo de administrador
+function AdminRoute({ children }) {
+  const { isAuthenticated, isAdmin, loading } = useAuthContext();
+
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+}
+
 // Componente principal con Router - debe estar dentro de AuthProvider
 function AppRouter() {
   const { isAuthenticated } = useAuthContext();
@@ -72,17 +98,17 @@ function AppRouter() {
           <Route
             path="/inventory"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <InventoryPage />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
           <Route
             path="/upload"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <UploadPage />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
           <Route
@@ -106,6 +132,14 @@ function AppRouter() {
             element={
               <ProtectedRoute>
                 <AgentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shop"
+            element={
+              <ProtectedRoute>
+                <ShopPage />
               </ProtectedRoute>
             }
           />

@@ -13,6 +13,7 @@ import {
   FaUser,
   FaBars,
   FaTimes,
+  FaShoppingBag,
 } from "react-icons/fa";
 
 const Navbar = () => {
@@ -102,21 +103,33 @@ const Navbar = () => {
                       <FaChartLine />
                       Dashboard
                     </Link>
+                    {isAdmin && (
+                      <>
+                        <Link
+                          className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
+                          to="/inventory"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <FaBox />
+                          Inventario
+                        </Link>
+                        <Link
+                          className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
+                          to="/upload"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <FaUpload />
+                          Cargar Datos
+                        </Link>
+                      </>
+                    )}
                     <Link
                       className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                      to="/inventory"
+                      to="/shop"
                       onClick={() => setIsOpen(false)}
                     >
-                      <FaBox />
-                      Inventario
-                    </Link>
-                    <Link
-                      className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                      to="/upload"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <FaUpload />
-                      Cargar Datos
+                      <FaShoppingBag />
+                      Tienda
                     </Link>
                     <Link
                       className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
@@ -186,19 +199,30 @@ const Navbar = () => {
                 <FaChartLine />
                 Dashboard
               </Link>
+              {isAdmin && (
+                <>
+                  <Link
+                    className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
+                    to="/inventory"
+                  >
+                    <FaBox />
+                    Inventario
+                  </Link>
+                  <Link
+                    className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
+                    to="/upload"
+                  >
+                    <FaUpload />
+                    Cargar Datos
+                  </Link>
+                </>
+              )}
               <Link
                 className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
-                to="/inventory"
+                to="/shop"
               >
-                <FaBox />
-                Inventario
-              </Link>
-              <Link
-                className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
-                to="/upload"
-              >
-                <FaUpload />
-                Cargar Datos
+                <FaShoppingBag />
+                Tienda
               </Link>
               <Link
                 className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"

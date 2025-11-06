@@ -1,10 +1,22 @@
 export async function enviarAlertaN8N(payload) {
-  const webhookUrl =
-    "https://alexjh230.app.n8n.cloud/webhook-test/alerta_stock";
+  // Determinar qué webhook usar según el tipo
+  let webhookUrl;
 
-  console.log("[N8N] 📤 Enviando alerta a n8n:", {
+  if (payload.tipo === "comprobante_pago") {
+    // Webhook para comprobantes de pago
+    webhookUrl =
+      import.meta.env.VITE_N8N_WEBHOOK_COMPROBANTE ||
+      "https://alexjh230.app.n8n.cloud/webhook-test/comprobante_pago";
+  } else {
+    // Webhook para alertas de stock (por defecto)
+    webhookUrl =
+      import.meta.env.VITE_N8N_WEBHOOK_ALERTA ||
+      "https://alexjh230.app.n8n.cloud/webhook-test/alerta_stock";
+  }
+
+  console.log("[N8N] 📤 Enviando a n8n:", {
     tipo: payload.tipo,
-    mensaje: payload.mensaje,
+    webhook: webhookUrl,
     fecha: payload.fecha,
   });
 
