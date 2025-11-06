@@ -20,7 +20,7 @@ const FloatingAssistantButton = () => {
   return (
     <button
       onClick={handleClick}
-      className="fixed bottom-8 right-8 z-50 w-20 h-20 bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 text-white rounded-2xl shadow-2xl hover:shadow-purple-500/50 transition-all duration-500 hover:scale-110 active:scale-95 flex items-center justify-center group overflow-hidden"
+      className="fixed bottom-8 right-8 z-50 w-20 h-20 bg-gradient-to-br from-[#002f19] via-[#004529] to-[#001a0e] text-white rounded-2xl shadow-2xl hover:shadow-[#002f19]/50 transition-all duration-500 hover:scale-110 active:scale-95 flex items-center justify-center group overflow-hidden"
       aria-label="Abrir asistente IA"
       title="Asistente IA"
     >

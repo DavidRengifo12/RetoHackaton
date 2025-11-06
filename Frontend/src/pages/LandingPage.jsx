@@ -1,5 +1,6 @@
-// Landing Page principal del sistema - Diseño moderno y espacioso
-import { Link } from "react-router-dom";
+import React from "react";
+import { Container, Row, Col, Button, Card } from "react-bootstrap";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import {
   FaShoppingBag,
@@ -13,9 +14,12 @@ import {
   FaCheckCircle,
   FaTshirt,
   FaHome,
+  FaDownload,
+  FaQrcode,
 } from "react-icons/fa";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuthContext();
 
   const servicios = [
@@ -23,43 +27,31 @@ const LandingPage = () => {
       icon: FaShoppingBag,
       title: "Gestión de Inventario",
       desc: "Control total de tu stock de ropa",
-      bgColor: "bg-blue-100",
-      iconColor: "text-blue-600",
     },
     {
       icon: FaChartLine,
       title: "Análisis de Ventas",
       desc: "Reportes detallados de rendimiento",
-      bgColor: "bg-indigo-100",
-      iconColor: "text-indigo-600",
     },
     {
       icon: FaRobot,
       title: "Asistentes Inteligentes",
       desc: "IA para consultas rápidas",
-      bgColor: "bg-purple-100",
-      iconColor: "text-purple-600",
     },
     {
       icon: FaShoppingCart,
       title: "E-commerce Integrado",
       desc: "Ventas online conectadas",
-      bgColor: "bg-pink-100",
-      iconColor: "text-pink-600",
     },
     {
       icon: FaMobileAlt,
       title: "App Móvil",
       desc: "Gestiona desde cualquier lugar",
-      bgColor: "bg-teal-100",
-      iconColor: "text-teal-600",
     },
     {
       icon: FaTools,
       title: "Soporte Técnico",
       desc: "Asistencia cuando la necesites",
-      bgColor: "bg-orange-100",
-      iconColor: "text-orange-600",
     },
   ];
 
@@ -82,383 +74,846 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header del Landing Page */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 no-underline group">
-              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg shadow-md group-hover:shadow-lg transition-all group-hover:scale-105">
-                <FaChartLine className="text-white text-lg" />
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent group-hover:from-blue-700 group-hover:to-indigo-700 transition-all">
-                InventarioPro
-              </span>
+    <div className="bg-white" style={{ width: "100%", overflowX: "hidden" }}>
+      {/* Navbar */}
+      <nav className="navbar navbar-expand-lg navbar-light bg-white py-3 shadow-sm sticky-top">
+        <Container>
+          <Link
+            to="/"
+            className="navbar-brand d-flex align-items-center text-decoration-none"
+          >
+            <div
+              className="me-2 d-flex align-items-center justify-content-center"
+              style={{
+                width: "32px",
+                height: "32px",
+                backgroundColor: "#002f19",
+                borderRadius: "6px",
+                transition: "transform 0.3s ease",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "scale(1.1)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "scale(1)")
+              }
+            >
+              <FaChartLine className="text-white" />
+            </div>
+            <span className="fw-bold fs-4" style={{ color: "#2E2E2E" }}>
+              InventarioPro
+            </span>
+          </Link>
+
+          <div className="navbar-nav d-none d-lg-flex flex-row me-auto ms-5">
+            <Link
+              className="nav-link px-3 fw-medium"
+              to="/"
+              style={{ color: "#002f19" }}
+            >
+              Inicio
             </Link>
-
-            {/* Navegación */}
-            <nav className="hidden md:flex items-center gap-6">
-              <Link
-                to="/"
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-              >
-                Inicio
-              </Link>
-              <Link
-                to="/shop"
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-              >
-                Tienda
-              </Link>
-              <Link
-                to="/agents"
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-              >
-                Asistentes IA
-              </Link>
-            </nav>
-
-            {/* Botones de Acción */}
-            <div className="flex items-center gap-3">
-              {isAuthenticated ? (
-                <>
-                  <Link
-                    to="/dashboard"
-                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    to="/shop"
-                    className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
-                  >
-                    Ir a Tienda
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to="/login"
-                    className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
-                  >
-                    Ingresar
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
-                  >
-                    Crear cuenta
-                  </Link>
-                </>
-              )}
-            </div>
+            <Link
+              className="nav-link px-3 fw-medium"
+              to="/shop"
+              style={{ color: "#002f19" }}
+            >
+              Tienda
+            </Link>
+            <Link
+              className="nav-link px-3 fw-medium"
+              to="/agents"
+              style={{ color: "#002f19" }}
+            >
+              Asistentes IA
+            </Link>
           </div>
-        </div>
-      </header>
 
-      {/* Hero Section - Ocupa toda la pantalla, alineado a la izquierda */}
-      <section className="relative min-h-[90vh] flex items-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-20">
-          <div className="max-w-7xl">
-            {/* Badge de Bienvenida */}
-            <div className="inline-block mb-8 px-6 py-3 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold border border-blue-200 shadow-sm">
-              ✨ Bienvenido a Nuestro Sistema Inteligente
-            </div>
+          <div className="d-flex gap-2">
+            {isAuthenticated ? (
+              <>
+                <Button
+                  onClick={() => navigate("/dashboard")}
+                  variant="link"
+                  className="text-decoration-none fw-medium"
+                  style={{ color: "#002f19" }}
+                >
+                  Dashboard
+                </Button>
+                <Button
+                  onClick={() => navigate("/shop")}
+                  className="px-4 py-2 fw-medium"
+                  style={{
+                    backgroundColor: "#002f19",
+                    border: "none",
+                    borderRadius: "6px",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#001a0e";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#002f19";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  Ir a Tienda
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={() => navigate("/login")}
+                  variant="link"
+                  className="text-decoration-none fw-medium"
+                  style={{ color: "#002f19" }}
+                >
+                  Ingresar
+                </Button>
+                <Button
+                  onClick={() => navigate("/register")}
+                  className="px-4 py-2 fw-medium"
+                  style={{
+                    backgroundColor: "#002f19",
+                    border: "none",
+                    borderRadius: "6px",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#001a0e";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#002f19";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  Crear cuenta
+                </Button>
+              </>
+            )}
+          </div>
+        </Container>
+      </nav>
 
-            {/* Título Principal - Alineado a la izquierda */}
-            <div className="space-y-6 mb-10">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight text-gray-900">
-                <span className="block mb-3">Gestiona tu Tienda</span>
-                <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  con Inteligencia
-                </span>
+      {/* Hero Section */}
+      <section
+        className="py-5"
+        style={{
+          backgroundColor: "#F5F7FA",
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          paddingTop: "120px",
+          paddingBottom: "120px",
+        }}
+      >
+        <Container>
+          <Row className="align-items-center">
+            <Col lg={6} className="pe-lg-5">
+              <div
+                className="mb-5 px-5 py-3 d-inline-block rounded-pill"
+                style={{
+                  backgroundColor: "#E8F5E8",
+                  color: "#002f19",
+                  fontSize: "1.2rem",
+                  fontWeight: "600",
+                  border: "1px solid #D4E8D4",
+                  animation: "fadeIn 0.6s ease-in",
+                }}
+              >
+                ✨ Bienvenido a Nuestro Sistema Inteligente
+              </div>
+
+              <h1
+                className="display-2 fw-bold mb-5"
+                style={{
+                  color: "#2E2E2E",
+                  animation: "fadeIn 0.8s ease-in",
+                  fontSize: "5rem",
+                  lineHeight: "1.2",
+                }}
+              >
+                Gestiona tu Tienda{" "}
+                <span style={{ color: "#002f19" }}>con Inteligencia</span>
               </h1>
-
-              {/* Descripción - Alineada a la izquierda */}
-              <p className="text-lg sm:text-xl md:text-2xl text-gray-700 max-w-4xl leading-relaxed">
+              <p
+                className="fs-3 text-muted mb-5"
+                style={{
+                  animation: "fadeIn 1s ease-in",
+                  lineHeight: "1.8",
+                  fontSize: "1.5rem",
+                }}
+              >
                 Controla tu inventario, analiza tus ventas y toma decisiones
                 inteligentes con nuestro sistema todo-en-uno diseñado para
                 tiendas de moda.
               </p>
-            </div>
-
-            {/* Botones de Acción - Alineados a la izquierda */}
-            <div className="flex flex-wrap gap-4">
-              <Link
-                to={isAuthenticated ? "/dashboard" : "/register"}
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 hover:scale-105"
+              <div
+                className="d-flex flex-wrap gap-3"
+                style={{ animation: "fadeIn 1.2s ease-in" }}
               >
-                Comenzar Ahora
-                <FaArrowRight className="ml-2" />
-              </Link>
-              {isAuthenticated ? (
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center px-8 py-4 bg-white text-blue-600 border-2 border-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                <Button
+                  onClick={() =>
+                    navigate(isAuthenticated ? "/dashboard" : "/register")
+                  }
+                  className="px-4 py-3 fw-medium d-flex align-items-center"
+                  style={{
+                    backgroundColor: "#002f19",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontSize: "1.4rem",
+                    padding: "20px 50px",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#001a0e";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#002f19";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
                 >
-                  <FaHome className="mr-2" />
-                  Ir al Dashboard
-                </Link>
-              ) : (
-                <Link
-                  to="/login"
-                  className="inline-flex items-center px-8 py-4 bg-white text-blue-600 border-2 border-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  Iniciar Sesión
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section - Alineado a la izquierda */}
-      <section className="py-24 bg-white">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="max-w-7xl">
-            <div className="mb-20">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Todo lo que Necesitas para tu Tienda
-              </h2>
-              <p className="text-lg sm:text-xl text-gray-600 max-w-3xl leading-relaxed">
-                Un sistema completo diseñado específicamente para tiendas de
-                moda y ropa
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-              {caracteristicas.map((feature, idx) => {
-                const Icon = feature.icon;
-                return (
-                  <div
-                    key={idx}
-                    className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 lg:p-10 border border-blue-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+                  Comenzar Ahora
+                  <FaArrowRight className="ms-2" />
+                </Button>
+                {isAuthenticated ? (
+                  <Button
+                    onClick={() => navigate("/dashboard")}
+                    variant="outline"
+                    className="px-4 py-3 fw-medium d-flex align-items-center"
+                    style={{
+                      color: "#002f19",
+                      borderColor: "#002f19",
+                      borderRadius: "6px",
+                      fontSize: "1.4rem",
+                      padding: "20px 50px",
+                      transition: "all 0.3s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#F5F7FA";
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
                   >
-                    <div className="bg-blue-600 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
-                      <Icon className="text-3xl text-white" />
-                    </div>
-                    <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-4">
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600 text-lg leading-relaxed">
-                      {feature.text}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section - Alineado a la izquierda */}
-      <section className="py-24 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="max-w-7xl">
-            <div className="mb-20">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-                Funcionalidades Potentes
-              </h2>
-              <p className="text-lg sm:text-xl text-gray-600 max-w-3xl leading-relaxed">
-                Herramientas diseñadas para hacer crecer tu negocio de moda
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-              {servicios.map((servicio, idx) => {
-                const Icon = servicio.icon;
-                return (
-                  <div
-                    key={idx}
-                    className="bg-white rounded-2xl p-8 lg:p-10 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100"
+                    <FaHome className="me-2" />
+                    Ir al Dashboard
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => navigate("/login")}
+                    variant="outline"
+                    className="px-4 py-3 fw-medium"
+                    style={{
+                      color: "#002f19",
+                      borderColor: "#002f19",
+                      borderRadius: "6px",
+                      fontSize: "1.4rem",
+                      padding: "20px 50px",
+                      transition: "all 0.3s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#F5F7FA";
+                      e.currentTarget.style.transform = "translateY(-2px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
                   >
-                    <div
-                      className={`${servicio.bgColor} w-16 h-16 rounded-xl flex items-center justify-center mb-6`}
-                    >
-                      <Icon className={`text-3xl ${servicio.iconColor}`} />
-                    </div>
-                    <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-4">
-                      {servicio.title}
-                    </h3>
-                    <p className="text-gray-600 text-lg leading-relaxed">
-                      {servicio.desc}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us Section - Alineado a la izquierda */}
-      <section className="py-24 bg-white">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="max-w-7xl">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
-              <div className="space-y-8">
-                <div>
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-                    ¿Por Qué Elegirnos?
-                  </h2>
-                  <p className="text-lg sm:text-xl text-gray-600 mb-10 leading-relaxed">
-                    La solución perfecta para tiendas de moda que buscan
-                    eficiencia y crecimiento.
-                  </p>
-                </div>
-                <div className="space-y-5">
-                  {[
-                    "Control total de tu inventario",
-                    "Análisis de ventas en tiempo real",
-                    "Asistentes inteligentes con IA",
-                    "Interfaz intuitiva y fácil de usar",
-                    "Soporte técnico especializado",
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-start">
-                      <FaCheckCircle className="text-green-500 text-2xl mr-4 flex-shrink-0 mt-1" />
-                      <span className="text-lg sm:text-xl text-gray-700 leading-relaxed">
-                        {item}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                    Iniciar Sesión
+                  </Button>
+                )}
               </div>
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-10 lg:p-14 border border-blue-100 shadow-lg">
-                <div className="grid grid-cols-2 gap-8 lg:gap-10">
-                  <div className="text-center">
-                    <div className="text-4xl lg:text-5xl font-bold text-blue-600 mb-3">
+            </Col>
+            <Col lg={6} className="text-center mt-4 mt-lg-0">
+              <div className="position-relative">
+                <img
+                  src="https://cdn.pixabay.com/photo/2020/01/26/20/14/computer-4795762_1280.jpg"
+                  alt="Sistema de gestión"
+                  className="img-fluid rounded-3"
+                  style={{
+                    maxHeight: "800px",
+                    width: "100%",
+                    objectFit: "cover",
+                    filter: "brightness(1.1)",
+                    animation: "fadeIn 1.4s ease-in",
+                    boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                  }}
+                />
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </section>
+
+      {/* Features Section */}
+      <section
+        className="py-5"
+        style={{
+          minHeight: "90vh",
+          display: "flex",
+          alignItems: "center",
+          paddingTop: "100px",
+          paddingBottom: "100px",
+        }}
+      >
+        <Container>
+          <div className="text-center mb-5">
+            <h2
+              className="fw-bold mb-4"
+              style={{ color: "#2E2E2E", fontSize: "2.5rem" }}
+            >
+              Todo lo que Necesitas para tu Tienda
+            </h2>
+            <p className="text-muted fs-5">
+              Un sistema completo diseñado específicamente para tiendas de moda
+              y ropa
+            </p>
+          </div>
+
+          <Row className="g-4">
+            {caracteristicas.map((feature, idx) => {
+              const Icon = feature.icon;
+              return (
+                <Col md={4} key={idx}>
+                  <Card
+                    className="border-0 text-center h-100 p-4"
+                    style={{
+                      transition: "all 0.3s ease",
+                      animation: `fadeIn ${0.6 + idx * 0.2}s ease-in`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-8px)";
+                      e.currentTarget.style.boxShadow =
+                        "0 8px 16px rgba(0,0,0,0.1)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  >
+                    <div className="mb-4">
+                      <div
+                        className="d-inline-flex align-items-center justify-content-center rounded-circle"
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                          backgroundColor: "#E8F5E8",
+                        }}
+                      >
+                        <Icon className="fa-3x" style={{ color: "#002f19" }} />
+                      </div>
+                    </div>
+                    <Card.Body className="p-0">
+                      <h5
+                        className="fw-bold mb-3"
+                        style={{ color: "#2E2E2E", fontSize: "1.5rem" }}
+                      >
+                        {feature.title}
+                      </h5>
+                      <p className="text-muted" style={{ fontSize: "1.1rem" }}>
+                        {feature.text}
+                      </p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        </Container>
+      </section>
+
+      {/* Services Section */}
+      <section
+        className="py-5"
+        style={{
+          backgroundColor: "#F5F7FA",
+          minHeight: "90vh",
+          display: "flex",
+          alignItems: "center",
+          paddingTop: "100px",
+          paddingBottom: "100px",
+        }}
+      >
+        <Container>
+          <div className="text-center mb-5">
+            <h2
+              className="fw-bold mb-4"
+              style={{ color: "#2E2E2E", fontSize: "2.5rem" }}
+            >
+              Funcionalidades Potentes
+            </h2>
+            <p className="text-muted fs-5">
+              Herramientas diseñadas para hacer crecer tu negocio de moda
+            </p>
+          </div>
+
+          <Row className="g-4">
+            {servicios.map((servicio, idx) => {
+              const Icon = servicio.icon;
+              return (
+                <Col md={4} key={idx}>
+                  <Card
+                    className="border-0 text-center h-100 p-4 bg-white"
+                    style={{
+                      transition: "all 0.3s ease",
+                      animation: `fadeIn ${0.8 + idx * 0.15}s ease-in`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-8px)";
+                      e.currentTarget.style.boxShadow =
+                        "0 12px 24px rgba(0,0,0,0.15)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                      e.currentTarget.style.boxShadow =
+                        "0 2px 4px rgba(0,0,0,0.1)";
+                    }}
+                  >
+                    <div className="mb-4">
+                      <div
+                        className="d-inline-flex align-items-center justify-content-center rounded-circle"
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                          backgroundColor: "#E8F5E8",
+                        }}
+                      >
+                        <Icon className="fa-3x" style={{ color: "#002f19" }} />
+                      </div>
+                    </div>
+                    <Card.Body className="p-0">
+                      <h5
+                        className="fw-bold mb-3"
+                        style={{ color: "#2E2E2E", fontSize: "1.5rem" }}
+                      >
+                        {servicio.title}
+                      </h5>
+                      <p className="text-muted" style={{ fontSize: "1.1rem" }}>
+                        {servicio.desc}
+                      </p>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              );
+            })}
+          </Row>
+        </Container>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section
+        className="py-5"
+        style={{
+          minHeight: "90vh",
+          display: "flex",
+          alignItems: "center",
+          paddingTop: "100px",
+          paddingBottom: "100px",
+        }}
+      >
+        <Container>
+          <Row className="align-items-center">
+            <Col lg={6}>
+              <h2
+                className="fw-bold mb-4"
+                style={{ color: "#2E2E2E", fontSize: "2.5rem" }}
+              >
+                ¿Por Qué Elegirnos?
+              </h2>
+              <p className="text-muted mb-5 fs-5" style={{ lineHeight: "1.6" }}>
+                La solución perfecta para tiendas de moda que buscan eficiencia
+                y crecimiento.
+              </p>
+              <div>
+                {[
+                  "Control total de tu inventario",
+                  "Análisis de ventas en tiempo real",
+                  "Asistentes inteligentes con IA",
+                  "Interfaz intuitiva y fácil de usar",
+                  "Soporte técnico especializado",
+                ].map((item, idx) => (
+                  <div key={idx} className="d-flex align-items-start mb-3">
+                    <FaCheckCircle
+                      className="me-3 mt-1"
+                      style={{ color: "#002f19", fontSize: "1.5rem" }}
+                    />
+                    <span
+                      className="text-muted"
+                      style={{ fontSize: "1.2rem", lineHeight: "1.6" }}
+                    >
+                      {item}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Col>
+            <Col lg={6}>
+              <div
+                className="p-4 rounded-3"
+                style={{
+                  backgroundColor: "#E8F5E8",
+                  border: "1px solid #D4E8D4",
+                }}
+              >
+                <Row className="g-4">
+                  <Col sm={6} className="text-center">
+                    <div
+                      className="display-4 fw-bold mb-2"
+                      style={{ color: "#002f19" }}
+                    >
                       100%
                     </div>
-                    <p className="text-gray-600 text-lg">Satisfacción</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl lg:text-5xl font-bold text-indigo-600 mb-3">
+                    <p className="text-muted">Satisfacción</p>
+                  </Col>
+                  <Col sm={6} className="text-center">
+                    <div
+                      className="display-4 fw-bold mb-2"
+                      style={{ color: "#002f19" }}
+                    >
                       24/7
                     </div>
-                    <p className="text-gray-600 text-lg">Disponible</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl lg:text-5xl font-bold text-purple-600 mb-3">
+                    <p className="text-muted">Disponible</p>
+                  </Col>
+                  <Col sm={6} className="text-center">
+                    <div
+                      className="display-4 fw-bold mb-2"
+                      style={{ color: "#002f19" }}
+                    >
                       10+
                     </div>
-                    <p className="text-gray-600 text-lg">Años de experiencia</p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-4xl lg:text-5xl font-bold text-pink-600 mb-3">
+                    <p className="text-muted">Años de experiencia</p>
+                  </Col>
+                  <Col sm={6} className="text-center">
+                    <div
+                      className="display-4 fw-bold mb-2"
+                      style={{ color: "#002f19" }}
+                    >
                       500+
                     </div>
-                    <p className="text-gray-600 text-lg">Clientes felices</p>
+                    <p className="text-muted">Clientes felices</p>
+                  </Col>
+                </Row>
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </section>
+
+      {/* App Móvil QR Section */}
+      <section
+        className="py-5"
+        style={{
+          backgroundColor: "#F5F7FA",
+          minHeight: "80vh",
+          display: "flex",
+          alignItems: "center",
+          paddingTop: "100px",
+          paddingBottom: "100px",
+        }}
+      >
+        <Container>
+          <Row className="align-items-center">
+            <Col lg={6} className="text-center mb-4 mb-lg-0">
+              <div
+                className="d-inline-block p-4 rounded-4 bg-white"
+                style={{
+                  boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+                  transition: "transform 0.3s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "scale(1.05)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+              >
+                <img
+                  src="/img/qr-movil.jpeg"
+                  alt="QR Code App Móvil"
+                  className="img-fluid"
+                  style={{
+                    maxWidth: "500px",
+                    width: "100%",
+                    height: "auto",
+                    borderRadius: "12px",
+                  }}
+                />
+              </div>
+              <div className="mt-4">
+                <Button
+                  onClick={() => {
+                    const link = document.createElement("a");
+                    link.href = "/img/qr-movil.jpeg";
+                    link.download = "qr-movil-inventariopro.jpeg";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                  }}
+                  className="px-4 py-2 fw-medium d-inline-flex align-items-center"
+                  style={{
+                    backgroundColor: "#002f19",
+                    border: "none",
+                    borderRadius: "6px",
+                    color: "white",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#001a0e";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#002f19";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <FaDownload className="me-2" />
+                  Descargar QR
+                </Button>
+              </div>
+            </Col>
+            <Col lg={6}>
+              <div className="ps-lg-5">
+                <div className="mb-3">
+                  <FaQrcode
+                    className="mb-3"
+                    style={{ color: "#002f19", fontSize: "3rem" }}
+                  />
+                </div>
+                <h2
+                  className="fw-bold mb-4"
+                  style={{ color: "#2E2E2E", fontSize: "3.5rem" }}
+                >
+                  Descarga Nuestra App Móvil
+                </h2>
+                <p
+                  className="text-muted mb-4 fs-4"
+                  style={{ lineHeight: "1.8", fontSize: "1.4rem" }}
+                >
+                  Escanea el código QR con tu dispositivo móvil para descargar
+                  nuestra aplicación y gestiona tu tienda desde cualquier lugar.
+                </p>
+                <div className="mb-4">
+                  <div className="d-flex align-items-start mb-3">
+                    <FaCheckCircle
+                      className="me-3 mt-1"
+                      style={{ color: "#002f19", fontSize: "1.5rem" }}
+                    />
+                    <div>
+                      <h6 className="fw-bold mb-1" style={{ color: "#2E2E2E" }}>
+                        Acceso Rápido
+                      </h6>
+                      <p className="text-muted mb-0">
+                        Escanea el QR y accede instantáneamente a tu cuenta
+                      </p>
+                    </div>
+                  </div>
+                  <div className="d-flex align-items-start mb-3">
+                    <FaCheckCircle
+                      className="me-3 mt-1"
+                      style={{ color: "#002f19", fontSize: "1.5rem" }}
+                    />
+                    <div>
+                      <h6 className="fw-bold mb-1" style={{ color: "#2E2E2E" }}>
+                        Gestión en Movimiento
+                      </h6>
+                      <p className="text-muted mb-0">
+                        Controla tu inventario y ventas desde tu móvil
+                      </p>
+                    </div>
+                  </div>
+                  <div className="d-flex align-items-start">
+                    <FaCheckCircle
+                      className="me-3 mt-1"
+                      style={{ color: "#002f19", fontSize: "1.5rem" }}
+                    />
+                    <div>
+                      <h6 className="fw-bold mb-1" style={{ color: "#2E2E2E" }}>
+                        Sincronización en Tiempo Real
+                      </h6>
+                      <p className="text-muted mb-0">
+                        Todos tus datos se sincronizan automáticamente
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+            </Col>
+          </Row>
+        </Container>
       </section>
 
-      {/* CTA Section - Alineado a la izquierda */}
-      <section className="py-24 bg-gradient-to-r from-blue-600 to-indigo-600">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="max-w-7xl space-y-8">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white">
+      {/* CTA Section */}
+      <section
+        className="py-5"
+        style={{
+          backgroundColor: "#002f19",
+          paddingTop: "100px",
+          paddingBottom: "100px",
+        }}
+      >
+        <Container>
+          <div className="text-center text-white">
+            <h2 className="fw-bold mb-4" style={{ fontSize: "2.5rem" }}>
               ¿Listo para Transformar tu Negocio?
             </h2>
-            <p className="text-lg sm:text-xl md:text-2xl text-blue-100 max-w-3xl leading-relaxed">
+            <p
+              className="fs-4 mb-5"
+              style={{ color: "#E8F5E8", lineHeight: "1.6" }}
+            >
               Comienza hoy mismo y lleva tu tienda de moda al siguiente nivel
             </p>
-            <div className="pt-4">
-              <Link
-                to={isAuthenticated ? "/dashboard" : "/register"}
-                className="inline-flex items-center px-10 py-5 bg-white text-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition-all duration-200 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 hover:scale-105"
-              >
-                Empezar Gratis
-                <FaArrowRight className="ml-2" />
-              </Link>
-            </div>
+            <Button
+              onClick={() =>
+                navigate(isAuthenticated ? "/dashboard" : "/register")
+              }
+              className="px-5 py-3 fw-medium d-inline-flex align-items-center"
+              style={{
+                backgroundColor: "#ffffff",
+                color: "#002f19",
+                border: "none",
+                borderRadius: "6px",
+                fontSize: "1.4rem",
+                padding: "20px 50px",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#F5F7FA";
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#ffffff";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              Empezar Gratis
+              <FaArrowRight className="ms-2" />
+            </Button>
           </div>
-        </div>
+        </Container>
       </section>
 
-      {/* Footer - Alineado a la izquierda */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-          <div className="max-w-7xl">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16 mb-12">
-              <div>
-                <h5 className="text-xl lg:text-2xl font-bold mb-6 flex items-center">
-                  <FaTshirt className="mr-3 text-blue-400" />
-                  Sistema de Inventario
-                </h5>
-                <p className="text-gray-400 text-lg leading-relaxed">
-                  La solución completa para gestionar tu tienda de moda de
-                  manera inteligente y eficiente.
-                </p>
+      {/* Footer */}
+      <footer className="py-4" style={{ backgroundColor: "#263238" }}>
+        <Container>
+          <Row className="align-items-center">
+            <Col md={6}>
+              <div className="d-flex align-items-center text-white mb-2">
+                <div
+                  className="me-2 d-flex align-items-center justify-content-center"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    backgroundColor: "#002f19",
+                    borderRadius: "6px",
+                  }}
+                >
+                  <FaTshirt className="text-white" />
+                </div>
+                <span className="fw-bold fs-5">Sistema de Inventario</span>
               </div>
-              <div>
-                <h5 className="text-xl lg:text-2xl font-bold mb-6">
-                  Enlaces Rápidos
-                </h5>
-                <ul className="space-y-3">
-                  <li>
-                    <Link
-                      to="/"
-                      className="text-gray-400 hover:text-white transition-colors text-lg"
-                    >
-                      Inicio
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/agents"
-                      className="text-gray-400 hover:text-white transition-colors text-lg"
-                    >
-                      Asistentes IA
-                    </Link>
-                  </li>
-                  {!isAuthenticated && (
-                    <>
-                      <li>
-                        <Link
-                          to="/login"
-                          className="text-gray-400 hover:text-white transition-colors text-lg"
-                        >
-                          Iniciar Sesión
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="/register"
-                          className="text-gray-400 hover:text-white transition-colors text-lg"
-                        >
-                          Registrarse
-                        </Link>
-                      </li>
-                    </>
-                  )}
-                </ul>
-              </div>
-              <div>
-                <h5 className="text-xl lg:text-2xl font-bold mb-6">
-                  Características
-                </h5>
-                <ul className="space-y-3 text-gray-400 text-lg">
-                  <li>Gestión de Inventario</li>
-                  <li>Análisis de Ventas</li>
-                  <li>Asistentes Inteligentes</li>
-                  <li>Soporte 24/7</li>
-                </ul>
-              </div>
-            </div>
-            <hr className="border-gray-800 mb-8" />
-            <div className="text-center text-gray-400 text-lg">
-              <p>
-                &copy; {new Date().getFullYear()} Sistema de Inventario. Todos
-                los derechos reservados.
+              <p className="text-white small mb-0" style={{ opacity: 0.9 }}>
+                La solución completa para gestionar tu tienda de moda de manera
+                inteligente y eficiente.
               </p>
-            </div>
+            </Col>
+            <Col md={3}>
+              <h6 className="text-white fw-bold mb-2">Enlaces Rápidos</h6>
+              <div className="d-flex flex-column">
+                <Link
+                  to="/"
+                  className="text-white text-decoration-none small mb-1"
+                  style={{ opacity: 0.9 }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.9")}
+                >
+                  Inicio
+                </Link>
+                <Link
+                  to="/agents"
+                  className="text-white text-decoration-none small mb-1"
+                  style={{ opacity: 0.9 }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.9")}
+                >
+                  Asistentes IA
+                </Link>
+                {!isAuthenticated && (
+                  <>
+                    <Link
+                      to="/login"
+                      className="text-white text-decoration-none small mb-1"
+                      style={{ opacity: 0.9 }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.opacity = "1")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.opacity = "0.9")
+                      }
+                    >
+                      Iniciar Sesión
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="text-white text-decoration-none small"
+                      style={{ opacity: 0.9 }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.opacity = "1")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.opacity = "0.9")
+                      }
+                    >
+                      Registrarse
+                    </Link>
+                  </>
+                )}
+              </div>
+            </Col>
+            <Col md={3}>
+              <h6 className="text-white fw-bold mb-2">Características</h6>
+              <div className="d-flex flex-column">
+                <span
+                  className="text-white small mb-1"
+                  style={{ opacity: 0.9 }}
+                >
+                  Gestión de Inventario
+                </span>
+                <span
+                  className="text-white small mb-1"
+                  style={{ opacity: 0.9 }}
+                >
+                  Análisis de Ventas
+                </span>
+                <span
+                  className="text-white small mb-1"
+                  style={{ opacity: 0.9 }}
+                >
+                  Asistentes Inteligentes
+                </span>
+                <span className="text-white small" style={{ opacity: 0.9 }}>
+                  Soporte 24/7
+                </span>
+              </div>
+            </Col>
+          </Row>
+          <hr className="border-white my-3" style={{ opacity: 0.3 }} />
+          <div
+            className="text-center text-white small"
+            style={{ opacity: 0.9 }}
+          >
+            <p className="mb-0">
+              &copy; {new Date().getFullYear()} Sistema de Inventario. Todos los
+              derechos reservados.
+            </p>
           </div>
-        </div>
+        </Container>
       </footer>
     </div>
   );

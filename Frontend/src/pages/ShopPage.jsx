@@ -197,12 +197,22 @@ const ShopPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header moderno mejorado */}
-      <div className="bg-gradient-to-r from-white via-blue-50/30 to-indigo-50/30 border-b-2 border-blue-200 shadow-lg sticky z-20 lg:top-16 top-16">
+      <div
+        className="border-b-2 shadow-lg sticky z-20 lg:top-16 top-16"
+        style={{
+          background:
+            "linear-gradient(to right, white, rgba(232, 245, 232, 0.3))",
+          borderColor: "#002f19",
+        }}
+      >
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-6 min-h-[100px]">
             {/* Título y descripción */}
             <div className="flex items-center gap-6">
-              <div className="flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl shadow-lg transform hover:scale-105 transition-transform">
+              <div
+                className="flex items-center justify-center w-20 h-20 rounded-2xl shadow-lg transform hover:scale-105 transition-transform"
+                style={{ backgroundColor: "#002f19" }}
+              >
                 <FaShoppingBag className="text-white text-3xl" />
               </div>
               <div>
@@ -235,7 +245,8 @@ const ShopPage = () => {
               )}
               <button
                 onClick={() => setShowCart(true)}
-                className="relative px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all active:scale-95 shadow-lg hover:shadow-xl flex items-center gap-3 font-semibold text-base"
+                className="relative px-6 py-4 text-white rounded-xl transition-all active:scale-95 shadow-lg hover:shadow-xl flex items-center gap-3 font-semibold text-base hover:opacity-90"
+                style={{ backgroundColor: "#002f19" }}
                 aria-label="Ver carrito"
               >
                 <FaShoppingCart className="text-xl" />
@@ -252,7 +263,10 @@ const ShopPage = () => {
       </div>
 
       {/* Sección de bienvenida */}
-      <div className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-16 px-4 sm:px-6 lg:px-8">
+      <div
+        className="w-full text-white py-16 px-4 sm:px-6 lg:px-8"
+        style={{ backgroundColor: "#002f19" }}
+      >
         <div className="w-full">
           <div className="text-center">
             <div className="flex items-center justify-center gap-4 mb-6">
@@ -263,10 +277,10 @@ const ShopPage = () => {
                 ¡Bienvenido a nuestra Tienda!
               </h2>
             </div>
-            <p className="text-xl sm:text-2xl text-blue-100 mb-4 font-semibold">
+            <p className="text-xl sm:text-2xl text-white/90 mb-4 font-semibold">
               Descubre nuestra amplia selección de productos de calidad
             </p>
-            <p className="text-lg text-blue-200 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-lg text-white/80 max-w-3xl mx-auto leading-relaxed">
               Encuentra todo lo que necesitas con los mejores precios y la mejor
               experiencia de compra. Explora nuestro catálogo y encuentra
               productos increíbles para ti.
@@ -295,7 +309,7 @@ const ShopPage = () => {
         {/* Filtros modernos */}
         <div className="w-full bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
           <div className="flex items-center gap-2 mb-6">
-            <FaFilter className="text-blue-600 text-lg" />
+            <FaFilter className="text-lg" style={{ color: "#002f19" }} />
             <span className="text-lg font-bold text-gray-900">
               Filtros de Búsqueda
             </span>
@@ -306,7 +320,15 @@ const ShopPage = () => {
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg transition-all"
+                onFocus={(e) => {
+                  e.target.style.borderColor = "#002f19";
+                  e.target.style.boxShadow = "0 0 0 2px rgba(0, 47, 25, 0.2)";
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = "";
+                  e.target.style.boxShadow = "";
+                }}
                 placeholder="Buscar productos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -315,7 +337,15 @@ const ShopPage = () => {
 
             {/* Categoría */}
             <select
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg transition-all bg-white"
+              onFocus={(e) => {
+                e.target.style.borderColor = "#002f19";
+                e.target.style.boxShadow = "0 0 0 2px rgba(0, 47, 25, 0.2)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "";
+                e.target.style.boxShadow = "";
+              }}
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
             >
@@ -329,7 +359,15 @@ const ShopPage = () => {
 
             {/* Género */}
             <select
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg transition-all bg-white"
+              onFocus={(e) => {
+                e.target.style.borderColor = "#002f19";
+                e.target.style.boxShadow = "0 0 0 2px rgba(0, 47, 25, 0.2)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = "";
+                e.target.style.boxShadow = "";
+              }}
               value={genderFilter}
               onChange={(e) => setGenderFilter(e.target.value)}
             >
@@ -440,7 +478,13 @@ const ShopPage = () => {
                                 );
                               }}
                             />
-                            <div className="image-placeholder w-full h-full hidden items-center justify-center absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100">
+                            <div
+                              className="image-placeholder w-full h-full hidden items-center justify-center absolute inset-0"
+                              style={{
+                                background:
+                                  "linear-gradient(to bottom right, #e8f5e8, #f5f7fa)",
+                              }}
+                            >
                               <div className="text-center">
                                 <FaBox className="text-gray-400 text-5xl mx-auto mb-2" />
                                 <p className="text-gray-500 text-sm font-medium">
@@ -453,7 +497,13 @@ const ShopPage = () => {
                       } else {
                         // No hay imagen_url o no se pudo generar URL
                         return (
-                          <div className="image-placeholder w-full h-full flex items-center justify-center absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100">
+                          <div
+                            className="image-placeholder w-full h-full flex items-center justify-center absolute inset-0"
+                            style={{
+                              background:
+                                "linear-gradient(to bottom right, #e8f5e8, #f5f7fa)",
+                            }}
+                          >
                             <div className="text-center">
                               <FaBox className="text-gray-400 text-5xl mx-auto mb-2" />
                               <p className="text-gray-500 text-sm font-medium">
@@ -522,7 +572,8 @@ const ShopPage = () => {
 
                       {/* Botón agregar al carrito */}
                       <button
-                        className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all font-semibold text-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                        className="w-full flex items-center justify-center gap-2 px-5 py-3.5 text-white rounded-xl transition-all font-semibold text-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg hover:opacity-90"
+                        style={{ backgroundColor: "#002f19" }}
                         onClick={() => handleAddToCart(product)}
                         disabled={product.stock === 0}
                       >
@@ -561,7 +612,13 @@ const ShopPage = () => {
                   {/* Controles de paginación */}
                   <div className="flex items-center gap-3">
                     <button
-                      className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-gray-700"
+                      className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-gray-700"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = "#002f19";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = "";
+                      }}
                       onClick={() => setCurrentPage(currentPage - 1)}
                       disabled={currentPage === 1}
                     >
@@ -583,9 +640,24 @@ const ShopPage = () => {
                               key={page}
                               className={`px-4 py-2.5 min-w-[44px] rounded-xl transition-all font-semibold ${
                                 currentPage === page
-                                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
-                                  : "border-2 border-gray-300 hover:bg-gray-50 hover:border-blue-400 text-gray-700"
+                                  ? "text-white shadow-md"
+                                  : "border-2 border-gray-300 hover:bg-gray-50 text-gray-700"
                               }`}
+                              style={
+                                currentPage === page
+                                  ? { backgroundColor: "#002f19" }
+                                  : {}
+                              }
+                              onMouseEnter={(e) => {
+                                if (currentPage !== page) {
+                                  e.currentTarget.style.borderColor = "#002f19";
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (currentPage !== page) {
+                                  e.currentTarget.style.borderColor = "";
+                                }
+                              }}
                               onClick={() => setCurrentPage(page)}
                             >
                               {page}
@@ -609,7 +681,13 @@ const ShopPage = () => {
                     </div>
 
                     <button
-                      className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-gray-700"
+                      className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-gray-700"
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = "#002f19";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = "";
+                      }}
                       onClick={() => setCurrentPage(currentPage + 1)}
                       disabled={currentPage === totalPages}
                     >

@@ -158,7 +158,10 @@ const Navbar = () => {
               <button
                 data-sidebar-toggle
                 onClick={toggleSidebar}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-all text-gray-700 hover:text-blue-600 active:scale-95"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-all text-gray-700 active:scale-95"
+                style={{ color: "#002f19" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#002f19")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#002f19")}
                 aria-label="Abrir menú"
               >
                 <FaBars className="text-xl" />
@@ -167,10 +170,16 @@ const Navbar = () => {
                 to={isAuthenticated ? "/dashboard" : "/"}
                 className="flex items-center gap-2 no-underline group"
               >
-                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg shadow-md group-hover:shadow-lg transition-all group-hover:scale-105">
+                <div
+                  className="flex items-center justify-center w-10 h-10 rounded-lg shadow-md group-hover:shadow-lg transition-all group-hover:scale-105"
+                  style={{ backgroundColor: "#002f19" }}
+                >
                   <FaChartLine className="text-white text-lg" />
                 </div>
-                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hidden sm:block group-hover:from-blue-700 group-hover:to-indigo-700 transition-all">
+                <span
+                  className="text-lg font-bold hidden sm:block transition-all"
+                  style={{ color: "#002f19" }}
+                >
                   InventarioPro
                 </span>
               </Link>
@@ -186,7 +195,17 @@ const Navbar = () => {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Buscar..."
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 transition-all"
+                    style={{ "--tw-ring-color": "#002f19" } || {}}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = "#002f19";
+                      e.target.style.boxShadow =
+                        "0 0 0 2px rgba(0, 47, 25, 0.2)";
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = "";
+                      e.target.style.boxShadow = "";
+                    }}
                   />
                 </div>
               </form>
@@ -206,7 +225,10 @@ const Navbar = () => {
                   )}
                   {/* Usuario - solo icono en móvil */}
                   <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: "#002f19" }}
+                    >
                       <FaUser className="text-white text-xs" />
                     </div>
                     <span className="text-sm font-medium text-gray-700 max-w-[80px] truncate hidden sm:inline">
@@ -226,13 +248,19 @@ const Navbar = () => {
                 <div className="flex items-center gap-2">
                   <Link
                     to="/login"
-                    className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                    className="px-3 py-2 text-sm font-medium text-gray-700 transition-colors"
+                    style={{ color: "#002f19" }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.opacity = "0.8")
+                    }
+                    onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
                   >
                     Ingresar
                   </Link>
                   <Link
                     to="/register"
-                    className="px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
+                    className="px-3 py-2 text-sm font-medium text-white rounded-lg transition-all shadow-sm hover:opacity-90"
+                    style={{ backgroundColor: "#002f19" }}
                   >
                     Crear cuenta
                   </Link>
@@ -256,7 +284,15 @@ const Navbar = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar productos en la tienda..."
-                  className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white"
+                  className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg transition-all bg-gray-50 hover:bg-white"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = "#002f19";
+                    e.target.style.boxShadow = "0 0 0 2px rgba(0, 47, 25, 0.2)";
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = "";
+                    e.target.style.boxShadow = "";
+                  }}
                 />
               </div>
             </form>
@@ -275,7 +311,16 @@ const Navbar = () => {
               {/* Botón Tienda rápida */}
               <Link
                 to="/shop"
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-105 active:scale-95 group"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 rounded-lg transition-all hover:scale-105 active:scale-95 group hover:bg-gray-50"
+                style={{ color: "#002f19" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#002f19";
+                  e.currentTarget.style.backgroundColor = "#e8f5e8";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#002f19";
+                  e.currentTarget.style.backgroundColor = "";
+                }}
                 title="Ir a la tienda"
               >
                 <FaShoppingBag className="group-hover:scale-110 transition-transform" />
@@ -284,18 +329,41 @@ const Navbar = () => {
               {/* Botón Dashboard */}
               <Link
                 to="/dashboard"
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-105 active:scale-95 group"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 rounded-lg transition-all hover:scale-105 active:scale-95 group hover:bg-gray-50"
+                style={{ color: "#002f19" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "#002f19";
+                  e.currentTarget.style.backgroundColor = "#e8f5e8";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "#002f19";
+                  e.currentTarget.style.backgroundColor = "";
+                }}
                 title="Panel de control"
               >
                 <FaChartLine className="group-hover:scale-110 transition-transform" />
                 <span className="hidden xl:inline">Panel</span>
               </Link>
               {/* Usuario - Compacto */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-indigo-50 transition-all cursor-pointer group border border-gray-200 hover:border-blue-300">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all group-hover:scale-110">
+              <div
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 transition-all cursor-pointer group border border-gray-200 hover:border-[#002f19]"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#e8f5e8";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "";
+                }}
+              >
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center shadow-sm group-hover:shadow-md transition-all group-hover:scale-110"
+                  style={{ backgroundColor: "#002f19" }}
+                >
                   <FaUser className="text-white text-xs" />
                 </div>
-                <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate hidden xl:inline group-hover:text-blue-600 transition-colors">
+                <span
+                  className="text-sm font-medium text-gray-700 max-w-[120px] truncate hidden xl:inline transition-colors"
+                  style={{ color: "#002f19" }}
+                >
                   {user?.nombre || user?.email?.split("@")[0] || "Usuario"}
                 </span>
               </div>
@@ -330,7 +398,10 @@ const Navbar = () => {
         }`}
       >
         {/* Header del sidebar - Mejorado con más información */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+        <div
+          className="flex items-center justify-between p-6 border-b border-gray-200"
+          style={{ backgroundColor: "#002f19" }}
+        >
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
               <FaUser className="text-white text-lg" />
@@ -379,16 +450,28 @@ const Navbar = () => {
                       onClick={() => setSidebarOpen(false)}
                       className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all no-underline group active:scale-95 ${
                         active
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-[1.02]"
-                          : "text-gray-700 hover:bg-gray-100 hover:text-blue-600 hover:scale-[1.01]"
+                          ? "text-white shadow-lg scale-[1.02]"
+                          : "text-gray-700 hover:bg-gray-100 hover:scale-[1.01]"
                       }`}
+                      style={
+                        active
+                          ? { backgroundColor: "#002f19" }
+                          : { color: "#002f19" }
+                      }
+                      onMouseEnter={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.color = "#002f19";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.color = "#002f19";
+                        }
+                      }}
                     >
                       <Icon
-                        className={`text-lg ${
-                          active
-                            ? "text-white"
-                            : "text-gray-500 group-hover:text-blue-600"
-                        }`}
+                        className={`text-lg ${active ? "text-white" : ""}`}
+                        style={active ? {} : { color: "#002f19" }}
                       />
                       <span className="font-medium">{item.label}</span>
                       {active && (
@@ -423,14 +506,16 @@ const Navbar = () => {
               <Link
                 to="/login"
                 onClick={() => setSidebarOpen(false)}
-                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium text-center hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm no-underline"
+                className="w-full px-4 py-3 text-white rounded-xl font-medium text-center transition-all shadow-sm no-underline hover:opacity-90"
+                style={{ backgroundColor: "#002f19" }}
               >
                 Iniciar Sesión
               </Link>
               <Link
                 to="/register"
                 onClick={() => setSidebarOpen(false)}
-                className="w-full px-4 py-3 border-2 border-blue-600 text-blue-600 rounded-xl font-medium text-center hover:bg-blue-50 transition-all no-underline"
+                className="w-full px-4 py-3 border-2 rounded-xl font-medium text-center transition-all no-underline hover:bg-gray-50"
+                style={{ borderColor: "#002f19", color: "#002f19" }}
               >
                 Crear Cuenta
               </Link>

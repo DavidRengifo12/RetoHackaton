@@ -132,7 +132,7 @@ const Recommendations = () => {
       case "media":
         return "bg-amber-100 text-amber-800 border-amber-200";
       default:
-        return "bg-blue-100 text-blue-800 border-blue-200";
+        return "bg-[#E8F5E8] text-[#002f19] border-[#002f19]/30";
     }
   };
 
@@ -165,7 +165,7 @@ const Recommendations = () => {
                   ? "border-red-500"
                   : rec.prioridad === "media"
                   ? "border-amber-500"
-                  : "border-blue-500"
+                  : "border-[#002f19]"
               } ${rec.leida ? "opacity-60" : ""}`}
             >
               <div className="flex items-start justify-between gap-4">

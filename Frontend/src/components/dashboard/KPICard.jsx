@@ -9,39 +9,39 @@ const KPICard = ({
 }) => {
   const colorConfig = {
     primary: {
-      bg: "bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600",
-      iconBg: "bg-gradient-to-br from-blue-100 to-blue-200",
-      iconColor: "text-blue-700",
-      border: "border-blue-200",
-      glow: "shadow-blue-200",
+      bg: "#002f19",
+      iconBg: "#e8f5e8",
+      iconColor: "#002f19",
+      border: "#002f19",
+      glow: "rgba(0, 47, 25, 0.3)",
     },
     success: {
-      bg: "bg-gradient-to-br from-green-500 via-green-600 to-emerald-600",
-      iconBg: "bg-gradient-to-br from-green-100 to-green-200",
-      iconColor: "text-green-700",
-      border: "border-green-200",
-      glow: "shadow-green-200",
+      bg: "#002f19",
+      iconBg: "#e8f5e8",
+      iconColor: "#002f19",
+      border: "#002f19",
+      glow: "rgba(0, 47, 25, 0.3)",
     },
     warning: {
-      bg: "bg-gradient-to-br from-amber-500 via-amber-600 to-orange-600",
-      iconBg: "bg-gradient-to-br from-amber-100 to-amber-200",
-      iconColor: "text-amber-700",
-      border: "border-amber-200",
-      glow: "shadow-amber-200",
+      bg: "#002f19",
+      iconBg: "#e8f5e8",
+      iconColor: "#002f19",
+      border: "#002f19",
+      glow: "rgba(0, 47, 25, 0.3)",
     },
     danger: {
-      bg: "bg-gradient-to-br from-red-500 via-red-600 to-rose-600",
-      iconBg: "bg-gradient-to-br from-red-100 to-red-200",
-      iconColor: "text-red-700",
-      border: "border-red-200",
-      glow: "shadow-red-200",
+      bg: "#002f19",
+      iconBg: "#e8f5e8",
+      iconColor: "#002f19",
+      border: "#002f19",
+      glow: "rgba(0, 47, 25, 0.3)",
     },
     info: {
-      bg: "bg-gradient-to-br from-cyan-500 via-cyan-600 to-blue-600",
-      iconBg: "bg-gradient-to-br from-cyan-100 to-cyan-200",
-      iconColor: "text-cyan-700",
-      border: "border-cyan-200",
-      glow: "shadow-cyan-200",
+      bg: "#002f19",
+      iconBg: "#e8f5e8",
+      iconColor: "#002f19",
+      border: "#002f19",
+      glow: "rgba(0, 47, 25, 0.3)",
     },
   };
 
@@ -51,7 +51,8 @@ const KPICard = ({
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 overflow-hidden group relative">
       {/* Efecto de brillo en hover */}
       <div
-        className={`absolute inset-0 ${config.glow} opacity-0 group-hover:opacity-50 blur-xl transition-opacity duration-300`}
+        className="absolute inset-0 opacity-0 group-hover:opacity-50 blur-xl transition-opacity duration-300"
+        style={{ backgroundColor: config.glow }}
       ></div>
 
       <div className="relative z-10 p-6">
@@ -116,7 +117,11 @@ const KPICard = ({
           </div>
           {icon && (
             <div
-              className={`${config.iconBg} ${config.iconColor} p-4 rounded-2xl flex items-center justify-center text-3xl shadow-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
+              className="p-4 rounded-2xl flex items-center justify-center text-3xl shadow-md group-hover:scale-110 group-hover:rotate-3 transition-all duration-300"
+              style={{
+                backgroundColor: config.iconBg,
+                color: config.iconColor,
+              }}
             >
               {icon}
             </div>
@@ -124,7 +129,8 @@ const KPICard = ({
         </div>
       </div>
       <div
-        className={`h-2 ${config.bg} group-hover:h-3 transition-all duration-300 relative overflow-hidden`}
+        className="h-2 group-hover:h-3 transition-all duration-300 relative overflow-hidden"
+        style={{ backgroundColor: config.bg }}
       >
         <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
       </div>

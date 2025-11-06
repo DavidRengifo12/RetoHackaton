@@ -110,9 +110,9 @@ const DashboardPage = () => {
   const isAdmin = user?.rol === "administrador";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-[#F5F7FA] to-[#E8F5E8]">
       {/* Header Mejorado */}
-      <div className="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl overflow-hidden">
+      <div className="relative bg-gradient-to-r from-[#002f19] via-[#004529] to-[#001a0e] text-white shadow-2xl overflow-hidden">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute inset-0">
           <div className="absolute top-0 left-0 w-72 h-72 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
@@ -127,7 +127,7 @@ const DashboardPage = () => {
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 drop-shadow-lg">
                 Panel de Control
               </h1>
-              <p className="text-blue-100 text-base sm:text-lg lg:text-xl">
+              <p className="text-white/90 text-base sm:text-lg lg:text-xl">
                 {isAdmin
                   ? "Métricas y análisis completo de tu negocio en tiempo real"
                   : "Bienvenido, aquí puedes ver tus estadísticas y métricas"}
@@ -150,7 +150,7 @@ const DashboardPage = () => {
       <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-8">
         {/* Banner de Recordatorio sobre Agentes - Solo para Administradores */}
         {isAdmin && (
-          <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-2xl border-2 border-blue-400/50">
+          <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#002f19] via-[#004529] to-[#001a0e] shadow-2xl border-2 border-[#002f19]/50">
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-400/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
@@ -172,7 +172,7 @@ const DashboardPage = () => {
                       ¡Aprovecha al máximo la aplicación!
                     </h3>
                   </div>
-                  <p className="text-blue-100 text-base sm:text-lg mb-4 leading-relaxed">
+                  <p className="text-white/90 text-base sm:text-lg mb-4 leading-relaxed">
                     Utiliza nuestros{" "}
                     <strong className="text-white">Agentes Inteligentes</strong>{" "}
                     para consultar productos, analizar ventas, gestionar
@@ -185,19 +185,19 @@ const DashboardPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
                       <div className="flex items-center gap-2 text-white text-sm font-medium">
-                        <FaBoxOpen className="text-blue-200" />
+                        <FaBoxOpen className="text-white/80" />
                         <span>Consultar Inventario</span>
                       </div>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
                       <div className="flex items-center gap-2 text-white text-sm font-medium">
-                        <FaChartLine className="text-indigo-200" />
+                        <FaChartLine className="text-white/80" />
                         <span>Analizar Ventas</span>
                       </div>
                     </div>
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
                       <div className="flex items-center gap-2 text-white text-sm font-medium">
-                        <FaRobot className="text-purple-200" />
+                        <FaRobot className="text-white/80" />
                         <span>Consultas Inteligentes</span>
                       </div>
                     </div>
@@ -212,7 +212,7 @@ const DashboardPage = () => {
                   {/* Botón de acción */}
                   <button
                     onClick={() => navigate("/agents")}
-                    className="group inline-flex items-center gap-3 bg-white text-blue-600 px-6 py-3 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 hover:bg-blue-50"
+                    className="group inline-flex items-center gap-3 bg-white text-[#002f19] px-6 py-3 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 hover:bg-[#E8F5E8]"
                   >
                     <span>Explorar Agentes</span>
                     <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
@@ -227,7 +227,7 @@ const DashboardPage = () => {
         <div className="mb-10">
           <div className="mb-6">
             <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-              <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
+              <div className="w-1 h-8 bg-gradient-to-b from-[#002f19] to-[#004529] rounded-full"></div>
               Indicadores Clave de Rendimiento
             </h2>
             <p className="text-gray-600 text-lg ml-4">
@@ -383,7 +383,7 @@ const DashboardPage = () => {
                 data={topProductsChartData}
                 dataKey="quantity"
                 nameKey="name"
-                color="#3b82f6"
+                color="#002f19"
               />
             </div>
             <div className="w-full bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
@@ -432,12 +432,12 @@ const DashboardPage = () => {
 
         {/* Sección: Métodos de Pago - Mejorado */}
         <div className="mb-10">
-          <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl p-8 border border-gray-200 overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+          <div className="bg-gradient-to-br from-white to-[#F5F7FA] rounded-2xl shadow-xl p-8 border border-gray-200 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[#002f19]/20 to-[#004529]/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
             <div className="relative z-10">
               <div className="mb-6">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-                  <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+                  <div className="w-1 h-8 bg-gradient-to-b from-[#002f19] to-[#004529] rounded-full"></div>
                   Métodos de Pago Disponibles
                 </h2>
                 <p className="text-gray-600 text-lg ml-4">
@@ -446,14 +446,14 @@ const DashboardPage = () => {
               </div>
               <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-12">
                 <div className="flex flex-col items-center gap-3 group">
-                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 group-hover:border-blue-400 group-hover:scale-110 group-hover:-translate-y-2">
+                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 group-hover:border-[#002f19] group-hover:scale-110 group-hover:-translate-y-2">
                     <img
                       src="/img/master.jpeg"
                       alt="Mastercard"
                       className="h-16 w-auto object-contain"
                     />
                   </div>
-                  <span className="text-base font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">
+                  <span className="text-base font-semibold text-gray-700 group-hover:text-[#002f19] transition-colors">
                     Mastercard
                   </span>
                 </div>

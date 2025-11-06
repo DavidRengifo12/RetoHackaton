@@ -114,7 +114,7 @@ export default function ChatMCP() {
                 <div
                   className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
                     mensaje.tipo === "usuario"
-                      ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+                      ? "bg-gradient-to-br from-[#002f19] to-[#004529] text-white"
                       : "bg-gradient-to-br from-green-500 to-emerald-600 text-white"
                   }`}
                 >
@@ -149,7 +149,7 @@ export default function ChatMCP() {
                   <span
                     className={`text-xs mt-2 px-2 ${
                       mensaje.tipo === "usuario"
-                        ? "text-blue-400"
+                        ? "text-[#002f19]"
                         : "text-gray-400"
                     }`}
                   >

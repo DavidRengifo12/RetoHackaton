@@ -173,11 +173,11 @@ export default function AgentsPage() {
               const IconComponent = agente.icon;
               const colorClasses = {
                 blue: {
-                  bg: "bg-blue-100",
-                  text: "text-blue-600",
-                  border: "border-blue-200",
-                  hoverBorder: "border-blue-500",
-                  button: "bg-blue-600 hover:bg-blue-700",
+                  bg: "bg-[#E8F5E8]",
+                  text: "text-[#002f19]",
+                  border: "border-[#002f19]/30",
+                  hoverBorder: "border-[#002f19]",
+                  button: "bg-[#002f19] hover:bg-[#001a0e]",
                 },
                 indigo: {
                   bg: "bg-indigo-100",
@@ -275,7 +275,7 @@ export default function AgentsPage() {
                   <div
                     className={`w-16 h-16 rounded-xl flex items-center justify-center shadow-md ${
                       agentes[agenteActivo].color === "blue"
-                        ? "bg-blue-100 text-blue-600"
+                        ? "bg-[#E8F5E8] text-[#002f19]"
                         : agentes[agenteActivo].color === "indigo"
                         ? "bg-indigo-100 text-indigo-600"
                         : agentes[agenteActivo].color === "green"
@@ -302,7 +302,7 @@ export default function AgentsPage() {
                 {agentes[agenteActivo].descripcionLarga && (
                   <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
                     <div className="flex items-start gap-3 mb-3">
-                      <FaInfoCircle className="text-blue-600 mt-1 flex-shrink-0" />
+                      <FaInfoCircle className="text-[#002f19] mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900 mb-2">
                           ¿Para qué sirve este agente?
@@ -327,7 +327,7 @@ export default function AgentsPage() {
                                 key={index}
                                 className="flex items-start gap-2 text-gray-700"
                               >
-                                <span className="text-blue-600 mt-1">•</span>
+                                <span className="text-[#002f19] mt-1">•</span>
                                 <span className="flex-1">{ejemplo}</span>
                               </li>
                             )
@@ -349,7 +349,7 @@ export default function AgentsPage() {
         {agenteActivo === "overview" && isAdmin && (
           <div className="bg-white rounded-xl shadow-lg p-8 mt-8 border border-gray-200">
             <div className="flex items-center gap-3 mb-6">
-              <FaInfoCircle className="text-blue-600 text-2xl" />
+              <FaInfoCircle className="text-[#002f19] text-2xl" />
               <h2 className="text-2xl font-bold text-gray-900">
                 Arquitectura del Sistema
               </h2>
@@ -364,9 +364,9 @@ export default function AgentsPage() {
                 </div>
                 <ul className="space-y-3 text-gray-600">
                   <li className="flex items-start gap-3">
-                    <FaBox className="text-blue-600 mt-1 flex-shrink-0" />
+                    <FaBox className="text-[#002f19] mt-1 flex-shrink-0" />
                     <div>
-                      <strong className="text-blue-600">Inventario:</strong>{" "}
+                      <strong className="text-[#002f19]">Inventario:</strong>{" "}
                       Consultas sobre productos, stock, tallas y disponibilidad
                     </div>
                   </li>
@@ -466,7 +466,7 @@ export default function AgentsPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-gray-200">
-                  <FaSearch className="text-blue-600 mt-1 flex-shrink-0" />
+                  <FaSearch className="text-[#002f19] mt-1 flex-shrink-0" />
                   <div>
                     <strong className="text-gray-900">Buscar productos</strong>
                     <p className="text-sm text-gray-600 mt-1">

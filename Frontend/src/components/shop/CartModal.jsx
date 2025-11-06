@@ -64,14 +64,14 @@ const CartModal = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#002f19] rounded-lg flex items-center justify-center">
               <FaShoppingCart className="text-white" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">
               Carrito de Compras
             </h2>
             {cartItems.length > 0 && (
-              <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+              <span className="px-2 py-1 bg-[#E8F5E8] text-[#002f19] text-xs font-semibold rounded-full">
                 {cartItems.length}
               </span>
             )}
@@ -102,7 +102,7 @@ const CartModal = ({
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
+                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-[#002f19] transition-colors"
                 >
                   {/* Información del producto */}
                   <div className="flex-1">
@@ -193,7 +193,7 @@ const CartModal = ({
               </button>
               <button
                 onClick={onCheckout}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors active:scale-95"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#002f19] hover:bg-[#001a0e] text-white font-medium rounded-lg transition-colors active:scale-95"
               >
                 Proceder al Pago
                 <FaArrowRight />

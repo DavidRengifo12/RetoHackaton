@@ -13,7 +13,6 @@ import {
   FaPaperPlane,
   FaSpinner,
   FaRobot,
-  
 } from "react-icons/fa";
 
 export default function ChatCliente() {
@@ -104,7 +103,7 @@ export default function ChatCliente() {
   return (
     <div className="flex flex-col h-full">
       {/* Header mejorado con gradiente */}
-      <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 p-6 shadow-xl">
+      <div className="relative mb-8 overflow-hidden rounded-2xl bg-gradient-to-br from-[#002f19] via-[#004529] to-[#001a0e] p-6 shadow-xl">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] opacity-20"></div>
         <div className="relative flex items-center gap-4">
           <div className="relative">
@@ -153,7 +152,7 @@ export default function ChatCliente() {
               <div
                 className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
                   mensaje.tipo === "usuario"
-                    ? "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
+                    ? "bg-gradient-to-br from-[#002f19] to-[#004529] text-white"
                     : "bg-gradient-to-br from-purple-500 to-indigo-600 text-white"
                 }`}
               >
@@ -236,7 +235,7 @@ export default function ChatCliente() {
                 <span
                   className={`text-xs mt-2 px-2 ${
                     mensaje.tipo === "usuario"
-                      ? "text-blue-400"
+                      ? "text-[#002f19]"
                       : "text-gray-400"
                   }`}
                 >
