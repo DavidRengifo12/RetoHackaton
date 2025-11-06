@@ -24,39 +24,19 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ============================================
 
 -- --------------------------------------------
--- Tabla: roles_usuario
--- Descripción: Define los roles disponibles en el sistema
--- --------------------------------------------
-CREATE TABLE IF NOT EXISTS roles_usuario (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  nombre VARCHAR(50) NOT NULL UNIQUE,
-  descripcion TEXT,
-  permisos JSONB DEFAULT '{}',
-  creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Índices para roles_usuario
-CREATE INDEX IF NOT EXISTS idx_roles_usuario_nombre ON roles_usuario(nombre);
-
--- --------------------------------------------
 -- Tabla: usuarios
 -- Descripción: Información extendida de usuarios sincronizada con auth.users
+-- El rol se almacena directamente como texto con constraint CHECK
 -- --------------------------------------------
 CREATE TABLE IF NOT EXISTS usuarios (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email VARCHAR(255) NOT NULL,
-  nombre_completo VARCHAR(255),
-  rol_id UUID REFERENCES roles_usuario(id) ON DELETE SET NULL,
-  telefono VARCHAR(50),
-  activo BOOLEAN DEFAULT TRUE,
-  creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  nombre TEXT,
+  rol TEXT CHECK (rol IN ('administrador', 'usuario')) DEFAULT 'usuario',
+  activo BOOLEAN DEFAULT TRUE
 );
 
 -- Índices para usuarios
-CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email);
-CREATE INDEX IF NOT EXISTS idx_usuarios_rol_id ON usuarios(rol_id);
+CREATE INDEX IF NOT EXISTS idx_usuarios_rol ON usuarios(rol);
 CREATE INDEX IF NOT EXISTS idx_usuarios_activo ON usuarios(activo);
 
 -- --------------------------------------------
@@ -67,9 +47,7 @@ CREATE TABLE IF NOT EXISTS categorias (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL UNIQUE,
   descripcion TEXT,
-  activa BOOLEAN DEFAULT TRUE,
-  creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  activa BOOLEAN DEFAULT TRUE
 );
 
 -- Índices para categorias
@@ -86,9 +64,7 @@ CREATE TABLE IF NOT EXISTS clientes (
   email VARCHAR(255),
   telefono VARCHAR(50),
   direccion TEXT,
-  activo BOOLEAN DEFAULT TRUE,
-  creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  activo BOOLEAN DEFAULT TRUE
 );
 
 -- Índices para clientes
@@ -114,9 +90,7 @@ CREATE TABLE IF NOT EXISTS productos (
   precio_costo DECIMAL(10, 2) DEFAULT 0 CHECK (precio_costo >= 0),
   descripcion TEXT,
   imagen_url TEXT,
-  activo BOOLEAN DEFAULT TRUE,
-  creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  activo BOOLEAN DEFAULT TRUE
 );
 
 -- Índices para productos
@@ -146,9 +120,7 @@ CREATE TABLE IF NOT EXISTS ventas (
   metodo_pago VARCHAR(50),
   notas TEXT,
   usuario_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  fecha_venta TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  actualizado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  fecha_venta TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Índices para ventas
@@ -172,8 +144,7 @@ CREATE TABLE IF NOT EXISTS movimientos_inventario (
   stock_nuevo INTEGER NOT NULL,
   motivo TEXT,
   usuario_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  referencia_venta UUID REFERENCES ventas(id) ON DELETE SET NULL,
-  creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  referencia_venta UUID REFERENCES ventas(id) ON DELETE SET NULL
 );
 
 -- Índices para movimientos_inventario
@@ -181,7 +152,6 @@ CREATE INDEX IF NOT EXISTS idx_movimientos_producto_id ON movimientos_inventario
 CREATE INDEX IF NOT EXISTS idx_movimientos_tipo ON movimientos_inventario(tipo_movimiento);
 CREATE INDEX IF NOT EXISTS idx_movimientos_usuario_id ON movimientos_inventario(usuario_id);
 CREATE INDEX IF NOT EXISTS idx_movimientos_referencia_venta ON movimientos_inventario(referencia_venta);
-CREATE INDEX IF NOT EXISTS idx_movimientos_creado_en ON movimientos_inventario(creado_en);
 
 -- --------------------------------------------
 -- Tabla: recomendaciones
@@ -195,7 +165,6 @@ CREATE TABLE IF NOT EXISTS recomendaciones (
   mensaje TEXT NOT NULL,
   leida BOOLEAN DEFAULT FALSE,
   resuelta BOOLEAN DEFAULT FALSE,
-  creado_en TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   resuelto_en TIMESTAMP WITH TIME ZONE
 );
 
@@ -205,6 +174,42 @@ CREATE INDEX IF NOT EXISTS idx_recomendaciones_tipo ON recomendaciones(tipo_reco
 CREATE INDEX IF NOT EXISTS idx_recomendaciones_prioridad ON recomendaciones(prioridad);
 CREATE INDEX IF NOT EXISTS idx_recomendaciones_leida ON recomendaciones(leida);
 CREATE INDEX IF NOT EXISTS idx_recomendaciones_resuelta ON recomendaciones(resuelta);
+
+-- --------------------------------------------
+-- Tabla: carritos
+-- Descripción: Carritos de compra de usuarios
+-- --------------------------------------------
+CREATE TABLE IF NOT EXISTS carritos (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  usuario_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  activo BOOLEAN DEFAULT TRUE
+);
+
+-- Índices para carritos
+CREATE INDEX IF NOT EXISTS idx_carritos_usuario_id ON carritos(usuario_id);
+CREATE INDEX IF NOT EXISTS idx_carritos_activo ON carritos(activo);
+
+-- Índice único parcial: solo un carrito activo por usuario
+CREATE UNIQUE INDEX IF NOT EXISTS idx_carritos_usuario_activo 
+ON carritos(usuario_id) 
+WHERE activo = TRUE;
+
+-- --------------------------------------------
+-- Tabla: carritos_items
+-- Descripción: Items dentro de cada carrito
+-- --------------------------------------------
+CREATE TABLE IF NOT EXISTS carritos_items (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  carrito_id UUID REFERENCES carritos(id) ON DELETE CASCADE NOT NULL,
+  producto_id UUID REFERENCES productos(id) ON DELETE CASCADE NOT NULL,
+  cantidad INTEGER DEFAULT 1 CHECK (cantidad > 0),
+  precio_unitario DECIMAL(10, 2) NOT NULL CHECK (precio_unitario >= 0),
+  UNIQUE(carrito_id, producto_id)
+);
+
+-- Índices para carritos_items
+CREATE INDEX IF NOT EXISTS idx_carritos_items_carrito_id ON carritos_items(carrito_id);
+CREATE INDEX IF NOT EXISTS idx_carritos_items_producto_id ON carritos_items(producto_id);
 
 -- ============================================
 -- VISTAS ÚTILES
@@ -231,8 +236,6 @@ SELECT
   p.descripcion,
   p.imagen_url,
   p.activo,
-  p.creado_en,
-  p.actualizado_en,
   COALESCE(SUM(v.cantidad), 0) as total_ventas,
   COALESCE(SUM(v.precio_total), 0) as ingresos_totales,
   COALESCE(SUM(v.precio_total - (v.cantidad * p.precio_costo)), 0) as ganancia_total,
@@ -247,7 +250,7 @@ SELECT
 FROM productos p
 LEFT JOIN categorias c ON p.categoria_id = c.id
 LEFT JOIN ventas v ON p.id = v.producto_id
-GROUP BY p.id, p.nombre, p.sku, c.nombre, p.categoria, p.talla, p.genero, p.stock, p.stock_minimo, p.precio, p.precio_costo, p.descripcion, p.imagen_url, p.activo, p.creado_en, p.actualizado_en;
+GROUP BY p.id, p.nombre, p.sku, c.nombre, p.categoria, p.talla, p.genero, p.stock, p.stock_minimo, p.precio, p.precio_costo, p.descripcion, p.imagen_url, p.activo;
 
 -- --------------------------------------------
 -- Vista: ventas_con_detalles
@@ -272,9 +275,7 @@ SELECT
   v.precio_total - v.descuento as precio_final,
   v.metodo_pago,
   v.notas,
-  u.email as email_usuario,
-  v.creado_en,
-  v.actualizado_en
+  u.nombre as nombre_usuario
 FROM ventas v
 LEFT JOIN productos p ON v.producto_id = p.id
 LEFT JOIN clientes c ON v.cliente_id = c.id
@@ -302,12 +303,9 @@ ORDER BY fecha DESC;
 -- DATOS INICIALES
 -- ============================================
 
--- Insertar roles por defecto
-INSERT INTO roles_usuario (nombre, descripcion) VALUES
-('usuario', 'Usuario con permisos básicos de lectura y escritura'),
-('administrador', 'Usuario con permisos completos del sistema'),
-('gerente', 'Usuario con permisos de gestión y análisis')
-ON CONFLICT (nombre) DO NOTHING;
+-- Nota: Los roles se asignan directamente en la tabla usuarios
+-- con el campo 'rol' que solo acepta 'administrador' o 'usuario'
+-- El valor por defecto es 'usuario'
 
 -- Insertar categorías por defecto
 INSERT INTO categorias (nombre, descripcion) VALUES

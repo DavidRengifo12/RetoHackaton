@@ -20,17 +20,7 @@
 -- FUNCIONES AUXILIARES
 -- ============================================
 
--- --------------------------------------------
--- Función: actualizar_timestamp
--- Descripción: Actualiza automáticamente el campo actualizado_en
--- --------------------------------------------
-CREATE OR REPLACE FUNCTION actualizar_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.actualizado_en = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- Función actualizar_timestamp eliminada - ya no se usan campos timestamp automáticos
 
 -- --------------------------------------------
 -- Función: generar_numero_venta
@@ -38,7 +28,10 @@ $$ LANGUAGE plpgsql;
 -- Formato: VENTA-YYYYMMDD-XXXXXX
 -- --------------------------------------------
 CREATE OR REPLACE FUNCTION generar_numero_venta()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   numero_secuencial INTEGER;
   fecha_actual VARCHAR(8);
@@ -75,7 +68,10 @@ CREATE OR REPLACE FUNCTION registrar_movimiento_inventario(
   p_usuario_id UUID DEFAULT NULL,
   p_referencia_venta UUID DEFAULT NULL
 )
-RETURNS UUID AS $$
+RETURNS UUID 
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   v_stock_anterior INTEGER;
   v_stock_nuevo INTEGER;
@@ -104,8 +100,7 @@ BEGIN
   
   -- Actualizar stock del producto
   UPDATE productos
-  SET stock = v_stock_nuevo,
-      actualizado_en = NOW()
+  SET stock = v_stock_nuevo
   WHERE id = p_producto_id;
   
   -- Registrar el movimiento
@@ -141,41 +136,25 @@ $$ LANGUAGE plpgsql;
 -- Se ejecuta automáticamente cuando se crea un usuario en auth.users
 -- --------------------------------------------
 CREATE OR REPLACE FUNCTION crear_usuario()
-RETURNS TRIGGER AS $$
-DECLARE
-  v_rol_usuario UUID;
+RETURNS TRIGGER 
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
-  -- Buscar el ID del rol "usuario"
-  SELECT id INTO v_rol_usuario
-  FROM roles_usuario
-  WHERE nombre = 'usuario'
-  LIMIT 1;
-  
-  -- Si no existe el rol, crearlo
-  IF v_rol_usuario IS NULL THEN
-    INSERT INTO roles_usuario (nombre, descripcion)
-    VALUES ('usuario', 'Usuario con permisos básicos de lectura y escritura')
-    RETURNING id INTO v_rol_usuario;
-  END IF;
-  
-  -- Insertar el usuario con el rol de "usuario"
+  -- Insertar el usuario con el rol de "usuario" (valor por defecto)
   INSERT INTO usuarios (
     id,
-    email,
-    nombre_completo,
-    rol_id,
+    nombre,
+    rol,
     activo
   )
   VALUES (
     NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'nombre_completo', NEW.email),
-    v_rol_usuario,
+    COALESCE(NEW.raw_user_meta_data->>'nombre', NEW.raw_user_meta_data->>'nombre_completo', NULL),
+    'usuario', -- Rol por defecto
     TRUE
   )
-  ON CONFLICT (id) DO UPDATE
-  SET email = NEW.email,
-      actualizado_en = NOW();
+  ON CONFLICT (id) DO NOTHING;
   
   RETURN NEW;
 END;
@@ -186,7 +165,10 @@ $$ LANGUAGE plpgsql;
 -- Descripción: Procesa automáticamente el movimiento de inventario al crear una venta
 -- --------------------------------------------
 CREATE OR REPLACE FUNCTION procesar_venta_inventario()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER 
+SECURITY DEFINER
+SET search_path = public
+AS $$
 DECLARE
   v_movimiento_id UUID;
 BEGIN
@@ -208,50 +190,8 @@ $$ LANGUAGE plpgsql;
 -- TRIGGERS AUTOMÁTICOS
 -- ============================================
 
--- --------------------------------------------
--- Trigger: Actualizar timestamp en productos
--- --------------------------------------------
-DROP TRIGGER IF EXISTS trigger_actualizar_productos ON productos;
-CREATE TRIGGER trigger_actualizar_productos
-  BEFORE UPDATE ON productos
-  FOR EACH ROW
-  EXECUTE FUNCTION actualizar_timestamp();
-
--- --------------------------------------------
--- Trigger: Actualizar timestamp en categorias
--- --------------------------------------------
-DROP TRIGGER IF EXISTS trigger_actualizar_categorias ON categorias;
-CREATE TRIGGER trigger_actualizar_categorias
-  BEFORE UPDATE ON categorias
-  FOR EACH ROW
-  EXECUTE FUNCTION actualizar_timestamp();
-
--- --------------------------------------------
--- Trigger: Actualizar timestamp en clientes
--- --------------------------------------------
-DROP TRIGGER IF EXISTS trigger_actualizar_clientes ON clientes;
-CREATE TRIGGER trigger_actualizar_clientes
-  BEFORE UPDATE ON clientes
-  FOR EACH ROW
-  EXECUTE FUNCTION actualizar_timestamp();
-
--- --------------------------------------------
--- Trigger: Actualizar timestamp en usuarios
--- --------------------------------------------
-DROP TRIGGER IF EXISTS trigger_actualizar_usuarios ON usuarios;
-CREATE TRIGGER trigger_actualizar_usuarios
-  BEFORE UPDATE ON usuarios
-  FOR EACH ROW
-  EXECUTE FUNCTION actualizar_timestamp();
-
--- --------------------------------------------
--- Trigger: Actualizar timestamp en ventas
--- --------------------------------------------
-DROP TRIGGER IF EXISTS trigger_actualizar_ventas ON ventas;
-CREATE TRIGGER trigger_actualizar_ventas
-  BEFORE UPDATE ON ventas
-  FOR EACH ROW
-  EXECUTE FUNCTION actualizar_timestamp();
+-- Nota: Los triggers de actualización de timestamp han sido eliminados
+-- ya que los campos creado_en y actualizado_en fueron removidos de las tablas
 
 -- --------------------------------------------
 -- Trigger: Generar número de venta automáticamente

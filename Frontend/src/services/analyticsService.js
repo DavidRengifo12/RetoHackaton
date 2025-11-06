@@ -8,6 +8,7 @@ export const analyticsService = {
   async getTopProductsThisMonth(limit = 5) {
     const { data: sales, error } = await salesService.getCurrentMonthSales();
     if (error) return { data: null, error };
+    if (!sales || !Array.isArray(sales)) return { data: [], error: null };
 
     // Agrupar por producto y sumar cantidades
     const productSales = {};
@@ -37,6 +38,7 @@ export const analyticsService = {
   async getMonthlyAverageSales() {
     const { data: currentMonthSales, error: currentError } = await salesService.getCurrentMonthSales();
     if (currentError) return { data: null, error: currentError };
+    if (!currentMonthSales || !Array.isArray(currentMonthSales)) return { data: null, error: new Error('Datos de ventas inválidos') };
 
     // Calcular mes anterior
     const lastMonth = new Date();
@@ -49,9 +51,10 @@ export const analyticsService = {
       endLastMonth.toISOString()
     );
     if (lastError) return { data: null, error: lastError };
+    if (!lastMonthSales || !Array.isArray(lastMonthSales)) return { data: null, error: new Error('Datos de ventas inválidos') };
 
-    const currentTotal = currentMonthSales.reduce((sum, sale) => sum + (sale.precio_total || 0), 0);
-    const lastTotal = lastMonthSales.reduce((sum, sale) => sum + (sale.precio_total || 0), 0);
+    const currentTotal = (currentMonthSales || []).reduce((sum, sale) => sum + (sale.precio_total || 0), 0);
+    const lastTotal = (lastMonthSales || []).reduce((sum, sale) => sum + (sale.precio_total || 0), 0);
 
     const currentDays = new Date().getDate();
     const lastDays = new Date(lastMonth.getFullYear(), lastMonth.getMonth() + 1, 0).getDate();
@@ -73,6 +76,7 @@ export const analyticsService = {
   async getInventoryRotation() {
     const { data: products, error } = await productService.getProductsWithStats();
     if (error) return { data: null, error };
+    if (!products || !Array.isArray(products)) return { data: { average: 0, products: [] }, error: null };
 
     const totalRotation = products.reduce((sum, p) => sum + (p.porcentaje_rotacion || 0), 0);
     const averageRotation = products.length > 0 ? totalRotation / products.length : 0;
@@ -94,6 +98,7 @@ export const analyticsService = {
   async getLowRotationProducts(threshold = 20) {
     const { data: products, error } = await productService.getProductsWithStats();
     if (error) return { data: null, error };
+    if (!products || !Array.isArray(products)) return { data: [], error: null };
 
     const lowRotation = products.filter(p => (p.porcentaje_rotacion || 0) < threshold);
 
@@ -107,13 +112,16 @@ export const analyticsService = {
   async getSalesByCategory() {
     const { data: sales, error } = await salesService.getCurrentMonthSales();
     if (error) return { data: null, error };
+    if (!sales || !Array.isArray(sales)) return { data: [], error: null };
 
     // Obtener categorías de productos
     const { data: products } = await productService.getAllProducts();
     const productCategories = {};
-    products.forEach(p => {
-      productCategories[p.id] = p.categoria;
-    });
+    if (products && Array.isArray(products)) {
+      products.forEach(p => {
+        productCategories[p.id] = p.categoria;
+      });
+    }
 
     // Agrupar ventas por categoría
     const categorySales = {};
@@ -136,13 +144,16 @@ export const analyticsService = {
   async getSalesBySize() {
     const { data: sales, error } = await salesService.getCurrentMonthSales();
     if (error) return { data: null, error };
+    if (!sales || !Array.isArray(sales)) return { data: [], error: null };
 
     // Obtener tallas de productos
     const { data: products } = await productService.getAllProducts();
     const productSizes = {};
-    products.forEach(p => {
-      productSizes[p.id] = p.talla;
-    });
+    if (products && Array.isArray(products)) {
+      products.forEach(p => {
+        productSizes[p.id] = p.talla;
+      });
+    }
 
     // Agrupar ventas por talla
     const sizeSales = {};
@@ -164,13 +175,16 @@ export const analyticsService = {
   async getSalesByGender() {
     const { data: sales, error } = await salesService.getCurrentMonthSales();
     if (error) return { data: null, error };
+    if (!sales || !Array.isArray(sales)) return { data: [], error: null };
 
     // Obtener géneros de productos
     const { data: products } = await productService.getAllProducts();
     const productGenders = {};
-    products.forEach(p => {
-      productGenders[p.id] = p.genero;
-    });
+    if (products && Array.isArray(products)) {
+      products.forEach(p => {
+        productGenders[p.id] = p.genero;
+      });
+    }
 
     // Agrupar ventas por género
     const genderSales = {};

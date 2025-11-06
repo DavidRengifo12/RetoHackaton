@@ -13,7 +13,7 @@ export const authService = {
         password,
         options: {
           data: {
-            nombre_completo: nombreCompleto || email
+            nombre: nombreCompleto || email
           }
         }
       });
@@ -35,28 +35,44 @@ export const authService = {
   // Inicio de sesión
   async signIn(email, password) {
     try {
+      console.log('[AUTH SERVICE] Iniciando signInWithPassword...');
       toastService.info('Iniciando sesión...');
       
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Crear un timeout para evitar que se quede colgado
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout: La solicitud de inicio de sesión tardó demasiado')), 10000)
+      );
+      
+      const signInPromise = supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      if (error) throw error;
-
-      // Obtener información del usuario y su rol
-      const { data: usuarioData } = await supabase
-        .from('usuarios')
-        .select('*, roles_usuario(*)')
-        .eq('id', data.user.id)
-        .single();
-
-      const rolNombre = usuarioData?.roles_usuario?.nombre || 'usuario';
       
-      toastService.success(`Sesión iniciada correctamente. Rol: ${rolNombre}`);
+      console.log('[AUTH SERVICE] Esperando respuesta de signInWithPassword...');
+      const result = await Promise.race([signInPromise, timeoutPromise]);
+      const { data, error } = result;
+      
+      console.log('[AUTH SERVICE] Respuesta recibida:', { hasData: !!data, hasError: !!error });
+
+      if (error) {
+        console.error('[AUTH SERVICE] Error en signInWithPassword:', error);
+        throw error;
+      }
+
+      if (!data || !data.user) {
+        console.error('[AUTH SERVICE] No se obtuvo usuario en la respuesta');
+        throw new Error('No se obtuvo usuario en la respuesta de autenticación');
+      }
+
+      console.log('[AUTH SERVICE] Usuario autenticado:', data.user.id);
+      
+      // No intentar obtener datos del usuario aquí - AuthContext lo hará
+      // Esto evita problemas de políticas RLS o errores silenciosos
+      toastService.success('Sesión iniciada correctamente');
       
       return { data, error: null };
     } catch (error) {
+      console.error('[AUTH SERVICE] Excepción en signIn:', error);
       toastService.error('Error al iniciar sesión: ' + error.message);
       return { data: null, error };
     }

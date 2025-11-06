@@ -114,7 +114,7 @@ const Recommendations = () => {
               className={`list-group-item list-group-item-action border-start border-${getPriorityColor(rec.prioridad)} border-3 ${rec.leida ? 'opacity-75' : ''}`}
             >
               <div className="d-flex w-100 justify-content-between align-items-start">
-                <div className="flex-grow-1">
+                <div className="grow">
                   <h6 className="mb-1">
                     {getIcon(rec.tipo_recomendacion)} {rec.mensaje}
                   </h6>

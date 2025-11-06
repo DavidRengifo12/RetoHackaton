@@ -1,5 +1,6 @@
 // Servicios CRUD para productos
 import supabase from './supabase';
+import { toastService } from '../utils/toastService';
 
 export const productService = {
   // Obtener todos los productos
@@ -59,12 +60,20 @@ export const productService = {
 
   // Crear un nuevo producto
   async createProduct(product) {
-    const { data, error } = await supabase
-      .from('productos')
-      .insert([product])
-      .select()
-      .single();
-    return { data, error };
+    try {
+      const { data, error } = await supabase
+        .from('productos')
+        .insert([product])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      toastService.success('Producto creado exitosamente');
+      return { data, error: null };
+    } catch (error) {
+      toastService.error(`Error al crear producto: ${error.message}`);
+      return { data: null, error };
+    }
   },
 
   // Actualizar un producto

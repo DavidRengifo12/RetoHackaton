@@ -9,6 +9,9 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import InventoryPage from './pages/InventoryPage';
 import UploadPage from './pages/UploadPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import AddProductPage from './pages/AddProductPage';
+import LandingPage from './pages/LandingPage';
 import './App.css';
 
 // Componente para rutas protegidas
@@ -37,6 +40,7 @@ const AppContent = () => {
       <ErrorBoundary>
         {isAuthenticated && <Navbar />}
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route
@@ -63,7 +67,22 @@ const AppContent = () => {
               </ProtectedRoute>
             }
           />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute>
+                <AdminUsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/products/add"
+            element={
+              <ProtectedRoute>
+                <AddProductPage />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
         <ToastContainer
           position="top-right"

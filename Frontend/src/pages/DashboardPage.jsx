@@ -24,7 +24,7 @@ const DashboardPage = () => {
     error,
   } = useAnalytics();
   
-  const { signOut } = useAuthContext();
+  const { signOut, user, isAdmin } = useAuthContext();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -53,8 +53,16 @@ const DashboardPage = () => {
   return (
     <div className="container-fluid mt-4 px-3 px-md-4">
       <div className="row mb-4">
-        <div className="col-12">
-          <h1 className="mb-4">📊 Dashboard Analítico</h1>
+        <div className="col-12 d-flex justify-content-between align-items-center">
+          <h1 className="mb-0">📊 Dashboard Analítico</h1>
+          <div className="d-flex align-items-center gap-2">
+            <span className="badge bg-secondary">
+              {user?.nombre || user?.email || 'Usuario'}
+            </span>
+            <span className={`badge ${isAdmin ? 'bg-danger' : 'bg-info'}`}>
+              {isAdmin ? '👑 Administrador' : '👤 Usuario'}
+            </span>
+          </div>
         </div>
       </div>
 

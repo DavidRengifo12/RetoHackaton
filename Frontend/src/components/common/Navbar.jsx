@@ -4,7 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
 
 const Navbar = () => {
-  const { user, signOut, isAuthenticated } = useAuthContext();
+  const { user, signOut, isAuthenticated, isAdmin } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -95,9 +95,31 @@ const Navbar = () => {
                     📤 Cargar Datos
                   </Link>
                 </li>
+                {isAdmin && (
+                  <>
+                    <li className="nav-item">
+                      <Link 
+                        className="nav-link py-2" 
+                        to="/admin/users"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        👥 Usuarios
+                      </Link>
+                    </li>
+                    <li className="nav-item">
+                      <Link 
+                        className="nav-link py-2" 
+                        to="/products/add"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        ➕ Agregar Producto
+                      </Link>
+                    </li>
+                  </>
+                )}
                 <li className="nav-item">
                   <span className="nav-link text-white-50 py-2">
-                    <small>{user?.email}</small>
+                    <small>{user?.nombre || user?.email}</small>
                   </span>
                 </li>
                 <li className="nav-item">
@@ -126,8 +148,27 @@ const Navbar = () => {
         {/* Barra de usuario - Solo visible en pantallas grandes */}
         {isAuthenticated && (
           <div className="d-none d-lg-flex align-items-center ms-auto">
+            <Link className="nav-link text-white me-2" to="/dashboard">
+              📊 Dashboard
+            </Link>
+            <Link className="nav-link text-white me-2" to="/inventory">
+              📦 Inventario
+            </Link>
+            <Link className="nav-link text-white me-2" to="/upload">
+              📤 Cargar Datos
+            </Link>
+            {isAdmin && (
+              <>
+                <Link className="nav-link text-white me-2" to="/admin/users">
+                  👥 Usuarios
+                </Link>
+                <Link className="nav-link text-white me-2" to="/products/add">
+                  ➕ Producto
+                </Link>
+              </>
+            )}
             <span className="nav-link text-white-50 mb-0 me-3">
-              {user?.email}
+              {user?.nombre || user?.email}
             </span>
             <button
               className="btn btn-outline-light btn-sm"

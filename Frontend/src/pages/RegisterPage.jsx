@@ -3,14 +3,14 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthContext } from '../context/AuthContext';
 import { authService } from '../services/authService';
-import Loading from '../components/common/Loading';
+import { toastService } from '../utils/toastService';
+import { FaUser, FaUserTie, FaEnvelope, FaLock, FaCheck } from 'react-icons/fa';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [nombreCompleto, setNombreCompleto] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const { isAuthenticated } = useAuthContext();
   const navigate = useNavigate();
@@ -23,18 +23,17 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
 
     // Validar contraseñas
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      toastService.error('Las contraseñas no coinciden');
       setLoading(false);
       return;
     }
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      toastService.error('La contraseña debe tener al menos 6 caracteres');
       setLoading(false);
       return;
     }
@@ -47,11 +46,10 @@ const RegisterPage = () => {
         setTimeout(() => {
           navigate('/login');
         }, 2000);
-      } else {
-        setError(result.error || 'Error al registrar usuario');
       }
+      // El error ya se maneja con toast desde authService
     } catch (err) {
-      setError(err.message || 'Error al registrar usuario');
+      toastService.error(err.message || 'Error al registrar usuario');
     } finally {
       setLoading(false);
     }
@@ -61,17 +59,17 @@ const RegisterPage = () => {
     <div className="container-fluid vh-100 d-flex align-items-center justify-content-center bg-light">
       <div className="card shadow-lg" style={{ width: '100%', maxWidth: '400px' }}>
         <div className="card-body p-5">
-          <h2 className="card-title text-center mb-4">Registro de Usuario</h2>
-          
-          {error && (
-            <div className="alert alert-danger" role="alert">
-              {error}
+          <div className="text-center mb-4">
+            <div className="mb-3 d-flex justify-content-center">
+              <FaUser size={48} style={{ color: '#002f19' }} />
             </div>
-          )}
-
+            <h2 className="card-title mb-0">Registro de Usuario</h2>
+          </div>
+          
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-              <label htmlFor="nombreCompleto" className="form-label">
+              <label htmlFor="nombreCompleto" className="form-label d-flex align-items-center">
+                <FaUserTie className="me-2" style={{ color: '#002f19' }} />
                 Nombre Completo
               </label>
               <input
@@ -81,11 +79,13 @@ const RegisterPage = () => {
                 value={nombreCompleto}
                 onChange={(e) => setNombreCompleto(e.target.value)}
                 disabled={loading}
+                placeholder="Juan Pérez"
               />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="email" className="form-label">
+              <label htmlFor="email" className="form-label d-flex align-items-center">
+                <FaEnvelope className="me-2" style={{ color: '#002f19' }} />
                 Correo Electrónico
               </label>
               <input
@@ -96,11 +96,13 @@ const RegisterPage = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={loading}
+                placeholder="tu@email.com"
               />
             </div>
 
             <div className="mb-3">
-              <label htmlFor="password" className="form-label">
+              <label htmlFor="password" className="form-label d-flex align-items-center">
+                <FaLock className="me-2" style={{ color: '#002f19' }} />
                 Contraseña
               </label>
               <input
@@ -112,6 +114,7 @@ const RegisterPage = () => {
                 required
                 minLength={6}
                 disabled={loading}
+                placeholder="••••••••"
               />
               <small className="form-text text-muted">
                 Mínimo 6 caracteres
@@ -119,7 +122,8 @@ const RegisterPage = () => {
             </div>
 
             <div className="mb-3">
-              <label htmlFor="confirmPassword" className="form-label">
+              <label htmlFor="confirmPassword" className="form-label d-flex align-items-center">
+                <FaLock className="me-2" style={{ color: '#002f19' }} />
                 Confirmar Contraseña
               </label>
               <input
@@ -130,21 +134,33 @@ const RegisterPage = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 disabled={loading}
+                placeholder="••••••••"
               />
             </div>
 
             <button
               type="submit"
-              className="btn btn-primary w-100 mb-3"
+              className="btn btn-primary w-100 mb-3 d-flex align-items-center justify-content-center"
               disabled={loading}
+              style={{ backgroundColor: '#002f19', borderColor: '#002f19' }}
             >
-              {loading ? 'Registrando...' : 'Registrarse'}
+              {loading ? (
+                <span className="d-flex align-items-center">
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span>Registrando...</span>
+                </span>
+              ) : (
+                <span className="d-flex align-items-center">
+                  <FaCheck className="me-2" />
+                  <span>Registrarse</span>
+                </span>
+              )}
             </button>
 
             <div className="text-center">
               <p className="mb-0">
                 ¿Ya tienes cuenta?{' '}
-                <Link to="/login" className="text-primary">
+                <Link to="/login" style={{ color: '#002f19' }}>
                   Inicia sesión aquí
                 </Link>
               </p>
