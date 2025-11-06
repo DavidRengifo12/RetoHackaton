@@ -1,0 +1,52 @@
+═══════════════════════════════════════════════════════════════
+              COMPROBANTE DE PAGO - SISTEMA MCP
+═══════════════════════════════════════════════════════════════
+
+Hola {{ $json.body.datos.nombreUsuario }},
+
+Gracias por tu compra. A continuación encontrarás el detalle de tu transacción:
+
+───────────────────────────────────────────────────────────────
+INFORMACIÓN DE LA VENTA
+───────────────────────────────────────────────────────────────
+
+Número de Venta: {{ $json.body.datos.numeroVenta }}
+Fecha: {{ $json.body.datos.fecha }}
+Método de Pago: {{ $json.body.datos.metodoPago }}
+
+───────────────────────────────────────────────────────────────
+DETALLE DE PRODUCTOS
+───────────────────────────────────────────────────────────────
+
+{{#each $json.body.datos.items}}
+{{ this.numero }}. {{ this.producto }}
+   Cantidad: {{ this.cantidad }}
+   Precio Unitario: ${{ this.precioUnitario }}
+   Subtotal: ${{ this.subtotal }}
+
+{{/each}}
+───────────────────────────────────────────────────────────────
+RESUMEN DE PAGO
+───────────────────────────────────────────────────────────────
+
+Subtotal: ${{ $json.body.datos.subtotal }}
+Total: ${{ $json.body.datos.total }}
+
+───────────────────────────────────────────────────────────────
+INFORMACIÓN ADICIONAL
+───────────────────────────────────────────────────────────────
+
+Saldo Restante: ${{ $json.body.datos.nuevoSaldo }}
+
+═══════════════════════════════════════════════════════════════
+
+Este es un comprobante automático. Por favor, guárdalo para tus registros.
+
+Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos.
+
+¡Gracias por tu preferencia!
+
+═══════════════════════════════════════════════════════════════
+Sistema MCP - Gestión de Inventario y Ventas
+═══════════════════════════════════════════════════════════════
+

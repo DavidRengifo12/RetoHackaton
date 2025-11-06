@@ -12,7 +12,7 @@ export const cartService = {
         .select("*")
         .eq("usuario_id", userId)
         .eq("activo", true)
-        .single();
+        .maybeSingle();
 
       if (existingCart && !fetchError) {
         return { data: existingCart, error: null };
@@ -74,7 +74,7 @@ export const cartService = {
         .select("*")
         .eq("carrito_id", cartId)
         .eq("producto_id", productId)
-        .single();
+        .maybeSingle();
 
       if (existingItem && !checkError) {
         // Actualizar cantidad

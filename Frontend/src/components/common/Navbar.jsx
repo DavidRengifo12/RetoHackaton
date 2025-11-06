@@ -1,4 +1,4 @@
-// Componente de navegación
+// Componente de navegación moderno inspirado en Mercado Libre
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
@@ -14,275 +14,431 @@ import {
   FaBars,
   FaTimes,
   FaShoppingBag,
+  FaShoppingCart,
+  FaSearch,
+  FaCrown,
 } from "react-icons/fa";
 
 const Navbar = () => {
   const { user, signOut, isAuthenticated, isAdmin } = useAuthContext();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
-  const navbarRef = useRef(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const sidebarRef = useRef(null);
 
-  // Cerrar el menú cuando cambia la ruta
+  // Cerrar el sidebar cuando cambia la ruta
   useEffect(() => {
-    setIsOpen(false);
+    setSidebarOpen(false);
   }, [location.pathname]);
 
-  // Cerrar el menú cuando se hace click fuera
+  // Cerrar el sidebar cuando se hace click fuera o presiona ESC
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (navbarRef.current && !navbarRef.current.contains(event.target)) {
-        setIsOpen(false);
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target) &&
+        !event.target.closest("[data-sidebar-toggle]")
+      ) {
+        setSidebarOpen(false);
       }
     };
 
-    if (isOpen) {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setSidebarOpen(false);
+      }
+    };
+
+    if (sidebarOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
     };
-  }, [isOpen]);
+  }, [sidebarOpen]);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
   const handleSignOut = async () => {
     const result = await signOut();
     if (result.success) {
-      setIsOpen(false);
+      setSidebarOpen(false);
       navigate("/login");
     }
   };
 
+  const isActive = (path) => location.pathname === path;
+
+  // Manejar búsqueda
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      // Si estamos en la tienda, solo actualizamos el estado local
+      // Si estamos en otra página, navegamos a la tienda con el término de búsqueda
+      if (location.pathname === "/shop") {
+        // Emitir evento personalizado para que ShopPage lo escuche
+        window.dispatchEvent(
+          new CustomEvent("shopSearch", { detail: searchTerm.trim() })
+        );
+      } else {
+        navigate(`/shop?search=${encodeURIComponent(searchTerm.trim())}`);
+      }
+    }
+  };
+
+  // Leer parámetro de búsqueda de la URL cuando se carga la página
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get("search");
+    if (searchParam && location.pathname === "/shop") {
+      setSearchTerm(searchParam);
+      window.dispatchEvent(
+        new CustomEvent("shopSearch", { detail: searchParam })
+      );
+    }
+  }, [location.pathname]);
+
+  const menuItems = isAuthenticated
+    ? [
+        {
+          icon: FaChartLine,
+          label: "Dashboard",
+          path: "/dashboard",
+          adminOnly: false,
+        },
+        {
+          icon: FaShoppingBag,
+          label: "Tienda",
+          path: "/shop",
+          adminOnly: false,
+        },
+        {
+          icon: FaBox,
+          label: "Inventario",
+          path: "/inventory",
+          adminOnly: true,
+        },
+        {
+          icon: FaUpload,
+          label: "Cargar Datos",
+          path: "/upload",
+          adminOnly: true,
+        },
+        {
+          icon: FaUsers,
+          label: "Usuarios",
+          path: "/admin/users",
+          adminOnly: true,
+        },
+        {
+          icon: FaPlus,
+          label: "Agregar Producto",
+          path: "/products/add",
+          adminOnly: true,
+        },
+      ].filter((item) => !item.adminOnly || isAdmin)
+    : [];
+
   return (
-    <nav
-      className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg"
-      ref={navbarRef}
-    >
-      <div className="container-fluid px-3 px-md-4">
-        <div className="flex items-center justify-between w-full py-4">
-          <Link
-            className="flex items-center gap-2 text-white text-xl font-bold no-underline hover:text-blue-100 transition-colors"
-            to="/"
-            onClick={() => setIsOpen(false)}
-          >
-            <FaChartLine className="text-2xl" />
-            Sistema de Inventario
-          </Link>
-
-          {/* Menú hamburguesa - Solo visible en móvil/tablet */}
-          <button
-            className="lg:hidden text-white p-2 hover:bg-white/20 rounded-lg transition-colors"
-            type="button"
-            onClick={toggleMenu}
-            aria-controls="navbarNav"
-            aria-expanded={isOpen}
-            aria-label="Toggle navigation"
-          >
-            {isOpen ? (
-              <FaTimes className="text-2xl" />
-            ) : (
-              <FaBars className="text-2xl" />
-            )}
-          </button>
-
-          {/* Menú desplegable - Solo visible en móvil/tablet */}
-          {isOpen && (
-            <div className="absolute top-full left-0 right-0 bg-gradient-to-r from-blue-600 to-indigo-600 shadow-xl lg:hidden z-50">
-              <div className="px-4 py-4 space-y-2">
-                {isAuthenticated ? (
-                  <>
-                    <Link
-                      className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                      to="/dashboard"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <FaChartLine />
-                      Dashboard
-                    </Link>
-                    {isAdmin && (
-                      <>
-                        <Link
-                          className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                          to="/inventory"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <FaBox />
-                          Inventario
-                        </Link>
-                        <Link
-                          className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                          to="/upload"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <FaUpload />
-                          Cargar Datos
-                        </Link>
-                      </>
-                    )}
-                    <Link
-                      className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                      to="/shop"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <FaShoppingBag />
-                      Tienda
-                    </Link>
-                    <Link
-                      className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                      to="/agents"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <FaRobot />
-                      Agentes
-                    </Link>
-                    {isAdmin && (
-                      <>
-                        <Link
-                          className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                          to="/admin/users"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <FaUsers />
-                          Usuarios
-                        </Link>
-                        <Link
-                          className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                          to="/products/add"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <FaPlus />
-                          Agregar Producto
-                        </Link>
-                      </>
-                    )}
-                    <div className="border-t border-white/20 my-3 pt-3">
-                      <div className="flex items-center gap-3 text-white/80 py-2 px-4">
-                        <FaUser />
-                        <span className="text-sm">
-                          {user?.nombre || user?.email}
-                        </span>
-                      </div>
-                      <button
-                        className="flex items-center gap-3 w-full text-white py-3 px-4 rounded-xl hover:bg-red-500/20 transition-colors border border-white/30 mt-2"
-                        onClick={handleSignOut}
-                      >
-                        <FaSignOutAlt />
-                        Cerrar Sesión
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <Link
-                    className="flex items-center gap-3 text-white py-3 px-4 rounded-xl hover:bg-white/20 transition-colors no-underline"
-                    to="/login"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <FaUser />
-                    Iniciar Sesión
-                  </Link>
-                )}
-              </div>
+    <>
+      {/* Header para pantallas pequeñas */}
+      <header className="lg:hidden sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16 gap-3">
+            {/* Logo y botón menú */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                data-sidebar-toggle
+                onClick={toggleSidebar}
+                className="p-2 rounded-lg hover:bg-gray-100 transition-all text-gray-700 hover:text-blue-600 active:scale-95"
+                aria-label="Abrir menú"
+              >
+                <FaBars className="text-xl" />
+              </button>
+              <Link
+                to={isAuthenticated ? "/dashboard" : "/"}
+                className="flex items-center gap-2 no-underline group"
+              >
+                <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg shadow-md group-hover:shadow-lg transition-all group-hover:scale-105">
+                  <FaChartLine className="text-white text-lg" />
+                </div>
+                <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hidden sm:block group-hover:from-blue-700 group-hover:to-indigo-700 transition-all">
+                  InventarioPro
+                </span>
+              </Link>
             </div>
-          )}
 
-          {/* Barra de usuario - Solo visible en pantallas grandes */}
-          {isAuthenticated && (
-            <div className="hidden lg:flex items-center gap-4">
-              <Link
-                className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
-                to="/dashboard"
-              >
-                <FaChartLine />
-                Dashboard
-              </Link>
-              {isAdmin && (
+            {/* Búsqueda en móvil */}
+            {isAuthenticated && (
+              <form onSubmit={handleSearch} className="flex-1 max-w-xs mx-2">
+                <div className="relative">
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Buscar..."
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </form>
+            )}
+
+            {/* Acciones del header */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {isAuthenticated ? (
                 <>
-                  <Link
-                    className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
-                    to="/inventory"
+                  {/* Badge de rol en móvil */}
+                  {isAdmin && (
+                    <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-md bg-amber-100 border border-amber-300">
+                      <span className="text-xs font-semibold text-amber-700">
+                        ADMIN
+                      </span>
+                    </div>
+                  )}
+                  {/* Usuario - solo icono en móvil */}
+                  <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                      <FaUser className="text-white text-xs" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 max-w-[80px] truncate hidden sm:inline">
+                      {user?.nombre || user?.email?.split("@")[0] || "Usuario"}
+                    </span>
+                  </div>
+                  {/* Botón salir - solo icono en móvil */}
+                  <button
+                    onClick={handleSignOut}
+                    className="p-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    aria-label="Cerrar sesión"
                   >
-                    <FaBox />
-                    Inventario
-                  </Link>
-                  <Link
-                    className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
-                    to="/upload"
-                  >
-                    <FaUpload />
-                    Cargar Datos
-                  </Link>
+                    <FaSignOutAlt />
+                  </button>
                 </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/login"
+                    className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    Ingresar
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
+                  >
+                    Crear cuenta
+                  </Link>
+                </div>
               )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Header para pantallas grandes - con búsqueda y más contenido */}
+      {isAuthenticated && (
+        <header className="hidden lg:block fixed top-0 left-80 right-0 h-16 z-30 bg-white border-b border-gray-200 shadow-sm">
+          <div className="h-full px-6 flex items-center justify-between gap-4">
+            {/* Búsqueda principal */}
+            <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
+              <div className="relative">
+                <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar productos en la tienda..."
+                  className="w-full pl-12 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white"
+                />
+              </div>
+            </form>
+
+            {/* Acciones del header - Mejorado con más elementos */}
+            <div className="flex items-center gap-2 lg:gap-3">
+              {/* Badge de rol */}
+              {isAdmin && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 shadow-sm hover:shadow-md transition-all">
+                  <FaCrown className="text-amber-600 text-xs" />
+                  <span className="text-xs font-semibold text-amber-700">
+                    ADMIN
+                  </span>
+                </div>
+              )}
+              {/* Botón Tienda rápida */}
               <Link
-                className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
                 to="/shop"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-105 active:scale-95 group"
+                title="Ir a la tienda"
               >
-                <FaShoppingBag />
-                Tienda
+                <FaShoppingBag className="group-hover:scale-110 transition-transform" />
+                <span className="hidden xl:inline">Tienda</span>
               </Link>
+              {/* Botón Dashboard */}
               <Link
-                className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
-                to="/agents"
+                to="/dashboard"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all hover:scale-105 active:scale-95 group"
+                title="Panel de control"
               >
-                <FaRobot />
-                Agentes
+                <FaChartLine className="group-hover:scale-110 transition-transform" />
+                <span className="hidden xl:inline">Panel</span>
               </Link>
-              {isAdmin && (
-                <>
-                  <Link
-                    className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
-                    to="/admin/users"
-                  >
-                    <FaUsers />
-                    Usuarios
-                  </Link>
-                  <Link
-                    className="flex items-center gap-2 text-white px-3 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
-                    to="/products/add"
-                  >
-                    <FaPlus />
-                    Producto
-                  </Link>
-                </>
-              )}
-              <div className="flex items-center gap-3 px-4 py-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                <FaUser className="text-sm" />
-                <span className="text-sm font-medium">
-                  {user?.nombre || user?.email}
+              {/* Usuario - Compacto */}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100 hover:from-blue-50 hover:to-indigo-50 transition-all cursor-pointer group border border-gray-200 hover:border-blue-300">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center shadow-sm group-hover:shadow-md transition-all group-hover:scale-110">
+                  <FaUser className="text-white text-xs" />
+                </div>
+                <span className="text-sm font-medium text-gray-700 max-w-[120px] truncate hidden xl:inline group-hover:text-blue-600 transition-colors">
+                  {user?.nombre || user?.email?.split("@")[0] || "Usuario"}
                 </span>
               </div>
+              {/* Botón salir */}
               <button
-                className="flex items-center gap-2 text-white px-4 py-2 rounded-lg hover:bg-red-500/20 transition-colors border border-white/30 text-sm font-medium"
                 onClick={handleSignOut}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all hover:scale-105 active:scale-95 group border border-transparent hover:border-red-200"
+                title="Cerrar sesión"
               >
-                <FaSignOutAlt />
-                Salir
+                <FaSignOutAlt className="group-hover:scale-110 transition-transform" />
+                <span className="hidden xl:inline">Salir</span>
               </button>
             </div>
-          )}
-          {!isAuthenticated && (
-            <div className="hidden lg:flex items-center gap-3">
+          </div>
+        </header>
+      )}
+
+      {/* Overlay oscuro cuando el sidebar está abierto (solo móvil) */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar: Fijo en pantallas grandes, deslizable en pequeñas */}
+      <aside
+        ref={sidebarRef}
+        className={`fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out lg:translate-x-0 ${
+          // En pantallas grandes siempre visible, en pequeñas solo cuando está abierto
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Header del sidebar - Mejorado con más información */}
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm flex-shrink-0">
+              <FaUser className="text-white text-lg" />
+            </div>
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-white font-semibold text-sm truncate">
+                {isAuthenticated
+                  ? user?.nombre || user?.email?.split("@")[0] || "Usuario"
+                  : "Invitado"}
+              </span>
+              {isAuthenticated && user?.email && (
+                <span className="text-white/80 text-xs truncate">
+                  {user.email}
+                </span>
+              )}
+              {isAuthenticated && isAdmin && (
+                <span className="text-white/90 text-xs font-medium mt-1 px-2 py-0.5 bg-white/20 rounded-full inline-block w-fit">
+                  Administrador
+                </span>
+              )}
+            </div>
+          </div>
+          {/* Botón cerrar solo visible en móvil */}
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-2 rounded-lg hover:bg-white/20 transition-all text-white active:scale-95 flex-shrink-0"
+            aria-label="Cerrar menú"
+          >
+            <FaTimes className="text-lg" />
+          </button>
+        </div>
+
+        {/* Contenido del sidebar */}
+        <div className="flex flex-col h-[calc(100vh-80px)] overflow-y-auto sidebar-scroll">
+          {isAuthenticated ? (
+            <>
+              {/* Menú de navegación */}
+              <nav className="flex-1 p-4 space-y-1">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.path);
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setSidebarOpen(false)}
+                      className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all no-underline group active:scale-95 ${
+                        active
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg scale-[1.02]"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-blue-600 hover:scale-[1.01]"
+                      }`}
+                    >
+                      <Icon
+                        className={`text-lg ${
+                          active
+                            ? "text-white"
+                            : "text-gray-500 group-hover:text-blue-600"
+                        }`}
+                      />
+                      <span className="font-medium">{item.label}</span>
+                      {active && (
+                        <div className="ml-auto w-2 h-2 bg-white rounded-full" />
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Footer del sidebar */}
+              <div className="p-4 border-t border-gray-200 space-y-2">
+                <button
+                  onClick={handleSignOut}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-all font-medium"
+                >
+                  <FaSignOutAlt className="text-lg" />
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-4">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  Bienvenido
+                </h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Inicia sesión para acceder a todas las funcionalidades
+                </p>
+              </div>
               <Link
-                className="text-white px-4 py-2 rounded-lg hover:bg-white/20 transition-colors no-underline text-sm font-medium"
                 to="/login"
+                onClick={() => setSidebarOpen(false)}
+                className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium text-center hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm no-underline"
               >
                 Iniciar Sesión
               </Link>
               <Link
-                className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors no-underline text-sm font-medium"
                 to="/register"
+                onClick={() => setSidebarOpen(false)}
+                className="w-full px-4 py-3 border-2 border-blue-600 text-blue-600 rounded-xl font-medium text-center hover:bg-blue-50 transition-all no-underline"
               >
-                Registrarse
+                Crear Cuenta
               </Link>
             </div>
           )}
         </div>
-      </div>
-    </nav>
+      </aside>
+    </>
   );
 };
 

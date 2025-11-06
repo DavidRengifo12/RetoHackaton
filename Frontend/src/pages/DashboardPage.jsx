@@ -1,5 +1,4 @@
 // Página de dashboard principal
-import { Link, useNavigate } from "react-router-dom";
 import { useAnalytics } from "../hooks/useAnalytics";
 import { useAuthContext } from "../context/AuthContext";
 import { formatCurrency, formatPercentage } from "../utils/helpers";
@@ -15,14 +14,17 @@ import {
 } from "../utils/formatters";
 import {
   FaChartLine,
-  FaBox,
-  FaUpload,
-  FaSignOutAlt,
-  FaCrown,
-  FaUser,
+  FaDollarSign,
+  FaShoppingCart,
+  FaUsers,
+  
+  FaBoxOpen,
 } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { salesService } from "../services/salesService";
 
 const DashboardPage = () => {
+  const { user } = useAuthContext();
   const {
     topProducts,
     monthlyAverage,
@@ -35,13 +37,57 @@ const DashboardPage = () => {
     error,
   } = useAnalytics();
 
-  const { signOut, user, isAdmin } = useAuthContext();
-  const navigate = useNavigate();
+  const [userStats, setUserStats] = useState({
+    totalSales: 0,
+    monthlySales: 0,
+    averageOrder: 0,
+    totalOrders: 0,
+  });
+  const [loadingUserStats, setLoadingUserStats] = useState(true);
 
-  const handleSignOut = async () => {
-    const result = await signOut();
-    if (result.success) {
-      navigate("/login");
+  useEffect(() => {
+    if (user) {
+      loadUserStats();
+    }
+  }, [user]);
+
+  const loadUserStats = async () => {
+    if (!user) return;
+
+    setLoadingUserStats(true);
+    try {
+      // Obtener todas las ventas del usuario
+      const { data: allSales } = await salesService.getAllSales();
+      const userSales =
+        allSales?.filter((sale) => sale.usuario_id === user.id) || [];
+
+      // Obtener ventas del mes actual
+      const { data: currentMonthSales } =
+        await salesService.getCurrentMonthSales();
+      const userMonthlySales =
+        currentMonthSales?.filter((sale) => sale.usuario_id === user.id) || [];
+
+      const totalSales = userSales.reduce(
+        (sum, sale) => sum + (sale.precio_total || 0),
+        0
+      );
+      const monthlySales = userMonthlySales.reduce(
+        (sum, sale) => sum + (sale.precio_total || 0),
+        0
+      );
+      const totalOrders = userSales.length;
+      const averageOrder = totalOrders > 0 ? totalSales / totalOrders : 0;
+
+      setUserStats({
+        totalSales,
+        monthlySales,
+        averageOrder,
+        totalOrders,
+      });
+    } catch (error) {
+      console.error("Error al cargar estadísticas del usuario:", error);
+    } finally {
+      setLoadingUserStats(false);
     }
   };
 
@@ -61,196 +107,313 @@ const DashboardPage = () => {
   const sizeChartData = formatSalesDataForChart(salesBySize || []);
   const genderChartData = formatSalesDataForChart(salesByGender || []);
 
+  const isAdmin = user?.rol === "administrador";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header Moderno */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
-        <div className="container-fluid px-4 py-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold mb-2 flex items-center">
-                <FaChartLine className="mr-3" />
-                Dashboard Analítico
-              </h1>
-              <p className="text-blue-100 text-lg">
-                Visión completa de tu negocio en tiempo real
-              </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header Mejorado */}
+      <div className="relative bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-2xl overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-72 h-72 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-400/20 rounded-full translate-x-1/2 translate-y-1/2 blur-3xl"></div>
+        </div>
+        <div className="relative w-full max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="bg-white/20 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/30">
+              <FaChartLine className="text-4xl sm:text-5xl" />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center gap-2">
-                <FaUser className="text-lg" />
-                <span className="font-semibold">
-                  {user?.nombre || user?.email || "Usuario"}
-                </span>
-              </div>
-              <div
-                className={`bg-${
-                  isAdmin ? "red" : "blue"
-                }-500 rounded-xl px-4 py-2 flex items-center gap-2`}
-              >
-                {isAdmin ? (
-                  <FaCrown className="text-lg" />
-                ) : (
-                  <FaUser className="text-lg" />
-                )}
-                <span className="font-semibold">
-                  {isAdmin ? "Administrador" : "Usuario"}
-                </span>
-              </div>
+            <div className="flex-1">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-2 drop-shadow-lg">
+                Panel de Control
+              </h1>
+              <p className="text-blue-100 text-base sm:text-lg lg:text-xl">
+                {isAdmin
+                  ? "Métricas y análisis completo de tu negocio en tiempo real"
+                  : "Bienvenido, aquí puedes ver tus estadísticas y métricas"}
+              </p>
+              {user && (
+                <div className="mt-3 flex items-center gap-2">
+                  <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                    👤 {user.nombre || user.email}
+                  </div>
+                  <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                    {isAdmin ? "🔑 Administrador" : "👥 Usuario"}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container-fluid px-4 py-6">
-        {/* Navegación Rápida - Solo visible en pantallas grandes */}
-        <div className="row mb-6 d-none d-lg-block">
-          <div className="col-12">
-            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-              <h5 className="text-xl font-bold text-gray-900 mb-4">
-                Navegación Rápida
-              </h5>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Link to="/inventory" className="text-decoration-none">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 text-center border-2 border-blue-200 hover:border-blue-400 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                    <FaBox className="text-4xl text-blue-600 mx-auto mb-3" />
-                    <h6 className="font-bold text-gray-900 mb-1">Inventario</h6>
-                    <p className="text-sm text-gray-600 mb-0">
-                      Gestionar productos y stock
-                    </p>
+      <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-8">
+        {/* Sección: Indicadores Clave (KPIs) - Mejorado */}
+        <div className="mb-10">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
+              Indicadores Clave de Rendimiento
+            </h2>
+            <p className="text-gray-600 text-lg ml-4">
+              {isAdmin
+                ? "Métricas principales de tu negocio"
+                : "Tus estadísticas personales y del negocio"}
+            </p>
+          </div>
+
+          {/* KPIs para Usuarios Normales */}
+          {!isAdmin && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-6">
+              <KPICard
+                title="Promedio Ventas Mensual"
+                value={
+                  monthlyAverage
+                    ? formatCurrency(monthlyAverage.current)
+                    : "$0.00"
+                }
+                subtitle={
+                  monthlyAverage
+                    ? `Promedio diario del mes actual`
+                    : "Sin datos disponibles"
+                }
+                icon="📈"
+                color="primary"
+                trend={monthlyAverage?.change}
+              />
+              <KPICard
+                title="Mis Ventas del Mes"
+                value={formatCurrency(userStats.monthlySales)}
+                subtitle="Total de tus ventas este mes"
+                icon="💰"
+                color="success"
+              />
+              <KPICard
+                title="Total de Pedidos"
+                value={userStats.totalOrders}
+                subtitle="Pedidos realizados en total"
+                icon="🛒"
+                color="info"
+              />
+              <KPICard
+                title="Ticket Promedio"
+                value={formatCurrency(userStats.averageOrder)}
+                subtitle="Promedio por pedido"
+                icon="💳"
+                color="warning"
+              />
+            </div>
+          )}
+
+          {/* KPIs para Administradores */}
+          {isAdmin && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 mb-6">
+              <KPICard
+                title="Promedio Ventas Mensual"
+                value={
+                  monthlyAverage
+                    ? formatCurrency(monthlyAverage.current)
+                    : "$0.00"
+                }
+                subtitle={
+                  monthlyAverage
+                    ? `Promedio diario del mes actual`
+                    : "Sin datos disponibles"
+                }
+                icon="📈"
+                color="primary"
+                trend={monthlyAverage?.change}
+              />
+              <KPICard
+                title="Rotación de Inventario"
+                value={
+                  inventoryRotation
+                    ? formatPercentage(inventoryRotation.average)
+                    : "0%"
+                }
+                subtitle="Promedio general de rotación"
+                icon="🔄"
+                color="success"
+              />
+              <KPICard
+                title="Productos Top 5"
+                value={topProducts?.length || 0}
+                subtitle="Productos más vendidos"
+                icon="🏆"
+                color="warning"
+              />
+              <KPICard
+                title="Baja Rotación"
+                value={lowRotationProducts?.length || 0}
+                subtitle="Productos con rotación < 20%"
+                icon="⚠️"
+                color="danger"
+              />
+            </div>
+          )}
+
+          {/* KPIs Adicionales para Todos */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+            <KPICard
+              title="Productos Más Vendidos"
+              value={topProducts?.length || 0}
+              subtitle="Top productos del mes"
+              icon="⭐"
+              color="info"
+            />
+            <KPICard
+              title="Categorías Activas"
+              value={salesByCategory?.length || 0}
+              subtitle="Categorías con ventas"
+              icon="📦"
+              color="primary"
+            />
+            <KPICard
+              title="Total Ventas del Mes"
+              value={
+                salesByCategory?.reduce(
+                  (sum, cat) => sum + (cat.totalRevenue || 0),
+                  0
+                )
+                  ? formatCurrency(
+                      salesByCategory.reduce(
+                        (sum, cat) => sum + (cat.totalRevenue || 0),
+                        0
+                      )
+                    )
+                  : "$0.00"
+              }
+              subtitle="Ingresos totales del mes"
+              icon="💵"
+              color="success"
+            />
+          </div>
+        </div>
+
+        {/* Sección: Análisis de Ventas - Mejorado */}
+        <div className="mb-10">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
+              Análisis de Ventas
+            </h2>
+            <p className="text-gray-600 text-lg ml-4">
+              Desglose detallado de tus ventas por diferentes categorías
+            </p>
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="w-full bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+              <CustomBarChart
+                title="Top 5 Productos Más Vendidos"
+                data={topProductsChartData}
+                dataKey="quantity"
+                nameKey="name"
+                color="#3b82f6"
+              />
+            </div>
+            <div className="w-full bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+              <CustomBarChart
+                title="Ventas por Categoría"
+                data={categoryChartData}
+                dataKey="value"
+                nameKey="name"
+                color="#10b981"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Sección: Distribución de Ventas - Mejorado */}
+        <div className="mb-10">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
+              Distribución de Ventas
+            </h2>
+            <p className="text-gray-600 text-lg ml-4">
+              Análisis detallado por talla y género
+            </p>
+          </div>
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="w-full bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+              <CustomPieChart
+                title="Distribución de Ventas por Talla"
+                data={sizeChartData}
+                dataKey="value"
+                nameKey="name"
+              />
+            </div>
+            <div className="w-full bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300">
+              <CustomLineChart
+                title="Ventas por Género"
+                data={genderChartData}
+                dataKey="value"
+                nameKey="name"
+                multipleLines={false}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Sección: Métodos de Pago - Mejorado */}
+        <div className="mb-10">
+          <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl p-8 border border-gray-200 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div className="relative z-10">
+              <div className="mb-6">
+                <h2 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+                  <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+                  Métodos de Pago Disponibles
+                </h2>
+                <p className="text-gray-600 text-lg ml-4">
+                  Aceptamos múltiples formas de pago para tu comodidad
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-12">
+                <div className="flex flex-col items-center gap-3 group">
+                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 group-hover:border-blue-400 group-hover:scale-110 group-hover:-translate-y-2">
+                    <img
+                      src="/img/master.jpeg"
+                      alt="Mastercard"
+                      className="h-16 w-auto object-contain"
+                    />
                   </div>
-                </Link>
-                <Link to="/upload" className="text-decoration-none">
-                  <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-6 text-center border-2 border-green-200 hover:border-green-400 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
-                    <FaUpload className="text-4xl text-green-600 mx-auto mb-3" />
-                    <h6 className="font-bold text-gray-900 mb-1">
-                      Cargar Datos
-                    </h6>
-                    <p className="text-sm text-gray-600 mb-0">
-                      Importar datos históricos
-                    </p>
-                  </div>
-                </Link>
-                <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-6 text-center border-2 border-indigo-300">
-                  <FaChartLine className="text-4xl text-indigo-600 mx-auto mb-3" />
-                  <h6 className="font-bold text-gray-900 mb-1">Dashboard</h6>
-                  <p className="text-sm text-gray-600 mb-0">Vista actual</p>
+                  <span className="text-base font-semibold text-gray-700 group-hover:text-blue-600 transition-colors">
+                    Mastercard
+                  </span>
                 </div>
-                <div
-                  className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-6 text-center border-2 border-red-200 hover:border-red-400 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer"
-                  onClick={handleSignOut}
-                >
-                  <FaSignOutAlt className="text-4xl text-red-600 mx-auto mb-3" />
-                  <h6 className="font-bold text-red-600 mb-1">Cerrar Sesión</h6>
-                  <p className="text-sm text-gray-600 mb-0">
-                    Salir del sistema
-                  </p>
+                <div className="flex flex-col items-center gap-3 group">
+                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 group-hover:border-green-400 group-hover:scale-110 group-hover:-translate-y-2">
+                    <img
+                      src="/img/pse-logo.jpeg"
+                      alt="PSE"
+                      className="h-16 w-auto object-contain"
+                    />
+                  </div>
+                  <span className="text-base font-semibold text-gray-700 group-hover:text-green-600 transition-colors">
+                    PSE
+                  </span>
+                </div>
+                <div className="flex flex-col items-center gap-3 group">
+                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 group-hover:border-purple-400 group-hover:scale-110 group-hover:-translate-y-2">
+                    <img
+                      src="/img/nequi-logo.png"
+                      alt="Nequi"
+                      className="h-16 w-auto object-contain"
+                    />
+                  </div>
+                  <span className="text-base font-semibold text-gray-700 group-hover:text-purple-600 transition-colors">
+                    Nequi
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* KPIs Principales */}
-        <div className="row mb-6 g-3">
-          <div className="col-12 col-sm-6 col-md-3">
-            <KPICard
-              title="Promedio Ventas Mensual"
-              value={
-                monthlyAverage
-                  ? formatCurrency(monthlyAverage.current)
-                  : "$0.00"
-              }
-              subtitle={
-                monthlyAverage
-                  ? `vs. mes anterior: ${formatPercentage(
-                      monthlyAverage.change
-                    )}`
-                  : "Sin datos"
-              }
-              icon="📈"
-              color="primary"
-              trend={monthlyAverage?.change}
-            />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <KPICard
-              title="Rotación de Inventario"
-              value={
-                inventoryRotation
-                  ? formatPercentage(inventoryRotation.average)
-                  : "0%"
-              }
-              subtitle="Promedio general"
-              icon="🔄"
-              color="success"
-            />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <KPICard
-              title="Productos Top 5"
-              value={topProducts?.length || 0}
-              subtitle="Más vendidos del mes"
-              icon="🏆"
-              color="warning"
-            />
-          </div>
-          <div className="col-12 col-sm-6 col-md-3">
-            <KPICard
-              title="Baja Rotación"
-              value={lowRotationProducts?.length || 0}
-              subtitle="Productos < 20%"
-              icon="⚠️"
-              color="danger"
-            />
-          </div>
-        </div>
-
-        {/* Gráficos */}
-        <div className="row mb-6 g-3">
-          <div className="col-12 col-md-6">
-            <CustomBarChart
-              title="Top 5 Productos Más Vendidos"
-              data={topProductsChartData}
-              dataKey="quantity"
-              nameKey="name"
-            />
-          </div>
-          <div className="col-12 col-md-6">
-            <CustomBarChart
-              title="Ventas por Categoría"
-              data={categoryChartData}
-              dataKey="value"
-              nameKey="name"
-            />
-          </div>
-        </div>
-
-        <div className="row mb-6 g-3">
-          <div className="col-12 col-md-6">
-            <CustomPieChart
-              title="Distribución de Ventas por Talla"
-              data={sizeChartData}
-              dataKey="value"
-              nameKey="name"
-            />
-          </div>
-          <div className="col-12 col-md-6">
-            <CustomLineChart
-              title="Ventas por Género"
-              data={genderChartData}
-              dataKey="value"
-              nameKey="name"
-              multipleLines={false}
-            />
-          </div>
-        </div>
-
-        {/* Recomendaciones */}
-        <div className="row">
-          <div className="col-12">
-            <Recommendations />
-          </div>
+        {/* Sección: Recomendaciones */}
+        <div className="mb-8">
+          <Recommendations />
         </div>
       </div>
     </div>

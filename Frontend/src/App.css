@@ -143,3 +143,22 @@ a:hover {
 .product-card:hover img {
   transform: scale(1.05);
 }
+
+/* Ajuste del contenido principal cuando el sidebar está fijo */
+.main-content-wrapper {
+  transition: margin-left 0.3s ease;
+}
+
+@media (min-width: 1024px) {
+  .main-content-wrapper {
+    margin-left: 320px; /* Ancho del sidebar (w-80 = 320px) */
+    margin-top: 64px; /* Altura del header fijo (h-16 = 64px) */
+  }
+}
+
+@media (max-width: 1023px) {
+  .main-content-wrapper {
+    margin-left: 0;
+    margin-top: 0;
+  }
+}

@@ -14,6 +14,26 @@ export const emailService = {
     nuevoSaldo,
   }) {
     try {
+      // Validar datos requeridos
+      if (!email) {
+        console.error("[EmailService] ❌ Email no proporcionado");
+        return {
+          success: false,
+          error: "Email no proporcionado",
+        };
+      }
+
+      if (!items || items.length === 0) {
+        console.error("[EmailService] ❌ No hay items para enviar");
+        return {
+          success: false,
+          error: "No hay items en la compra",
+        };
+      }
+
+      console.log("[EmailService] 📧 Preparando comprobante para:", email);
+      console.log("[EmailService] 📦 Items:", items.length);
+
       // Formatear items para el comprobante
       const itemsFormateados = items.map((item, index) => ({
         numero: index + 1,
@@ -41,15 +61,36 @@ export const emailService = {
         fecha: new Date().toISOString(),
       };
 
+      console.log("[EmailService] 📤 Payload preparado:", {
+        tipo: payload.tipo,
+        email: payload.email,
+        asunto: payload.asunto,
+        itemsCount: payload.datos.items.length,
+        total: payload.datos.total,
+      });
+
       // Enviar a n8n (que se encargará de enviar el email)
       const enviado = await enviarAlertaN8N(payload);
 
       if (enviado) {
-        console.log("[EmailService] ✅ Comprobante enviado exitosamente");
+        console.log("[EmailService] ✅ Comprobante enviado exitosamente a n8n");
+        console.log("[EmailService] 📧 Email:", email);
+        console.log("[EmailService] 📋 Asunto:", payload.asunto);
         return { success: true, error: null };
       } else {
-        console.warn("[EmailService] ⚠️ No se pudo enviar el comprobante");
-        return { success: false, error: "No se pudo enviar el comprobante" };
+        console.error(
+          "[EmailService] ❌ No se pudo enviar el comprobante a n8n"
+        );
+        console.error("[EmailService] 📧 Email destino:", email);
+        console.error("[EmailService] ⚠️ Verifica:");
+        console.error("  1. Que el webhook de n8n esté activo");
+        console.error("  2. Que la URL del webhook sea correcta");
+        console.error("  3. Que n8n tenga configurado el servicio de email");
+        return {
+          success: false,
+          error:
+            "No se pudo enviar el comprobante. Verifica la configuración de n8n.",
+        };
       }
     } catch (error) {
       console.error("[EmailService] ❌ Error al enviar comprobante:", error);

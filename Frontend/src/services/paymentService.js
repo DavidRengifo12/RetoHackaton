@@ -6,10 +6,42 @@ import { emailService } from "./emailService";
 export const paymentService = {
   // Métodos de pago disponibles
   METODOS_PAGO: [
-    { id: "nequi", nombre: "Nequi", icon: "💳" },
-    { id: "tarjeta_debito", nombre: "Tarjeta Débito", icon: "💳" },
-    { id: "tarjeta_credito", nombre: "Tarjeta Crédito", icon: "💳" },
-    { id: "efectivo", nombre: "Efectivo", icon: "💵" },
+    {
+      id: "nequi",
+      nombre: "Nequi",
+      icon: "💳",
+      imagen: "/img/nequi-logo.png",
+    },
+    {
+      id: "mastercard",
+      nombre: "Mastercard",
+      icon: "💳",
+      imagen: "/img/master.jpeg",
+    },
+    {
+      id: "pse",
+      nombre: "PSE",
+      icon: "💳",
+      imagen: "/img/pse-logo.jpeg",
+    },
+    {
+      id: "tarjeta_debito",
+      nombre: "Tarjeta Débito",
+      icon: "💳",
+      imagen: "/img/tarjeta_debito.png",
+    },
+    {
+      id: "tarjeta_credito",
+      nombre: "Tarjeta Crédito",
+      icon: "💳",
+      imagen: "/img/tarjeta_credito.png",
+    },
+    {
+      id: "efectivo",
+      nombre: "Efectivo",
+      icon: "💵",
+      imagen: "/img/efectivo.png",
+    },
   ],
 
   // Obtener saldo del usuario
@@ -132,9 +164,10 @@ export const paymentService = {
         .eq("id", carritoId);
 
       // Enviar comprobante por email
+      let emailEnviado = false;
       if (userEmail && items.length > 0) {
         try {
-          await emailService.enviarComprobantePago({
+          const resultadoEmail = await emailService.enviarComprobantePago({
             email: userEmail,
             nombreUsuario: userName || "Cliente",
             numeroVenta: numeroVenta || ventas[0]?.id || "N/A",
@@ -150,20 +183,42 @@ export const paymentService = {
             }),
             nuevoSaldo: nuevoSaldo,
           });
-          console.log("[PaymentService] ✅ Comprobante enviado por email");
+
+          emailEnviado = resultadoEmail?.success === true;
+
+          if (emailEnviado) {
+            console.log("[PaymentService] ✅ Comprobante enviado por email");
+          } else {
+            console.warn(
+              "[PaymentService] ⚠️ No se pudo enviar el comprobante:",
+              resultadoEmail?.error
+            );
+            toastService.warning(
+              "Pago procesado, pero no se pudo enviar el comprobante por correo. Verifica la configuración de n8n."
+            );
+          }
         } catch (emailError) {
           console.error(
-            "[PaymentService] ⚠️ Error al enviar comprobante:",
+            "[PaymentService] ❌ Error al enviar comprobante:",
             emailError
+          );
+          toastService.warning(
+            "Pago procesado, pero hubo un error al enviar el comprobante por correo."
           );
           // No fallar el pago si el email falla
         }
       }
 
+      const mensajeEmail = emailEnviado
+        ? "Comprobante enviado a tu correo."
+        : userEmail
+        ? "Revisa la configuración de correo si no recibes el comprobante."
+        : "";
+
       toastService.success(
         `Pago procesado exitosamente con ${this.getMetodoPagoNombre(
           metodoPago
-        )}. ${userEmail ? "Comprobante enviado a tu correo." : ""}`
+        )}. ${mensajeEmail}`
       );
 
       return {

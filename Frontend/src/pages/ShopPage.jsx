@@ -4,12 +4,29 @@ import { useProducts } from "../hooks/useProducts";
 import { useAuthContext } from "../context/AuthContext";
 import { cartService } from "../services/cartService";
 import { paymentService } from "../services/paymentService";
+import { storageService } from "../services/storageService";
 import { formatCurrency } from "../utils/helpers";
 
 import CartModal from "../components/shop/CartModal";
 import PaymentModal from "../components/shop/PaymentModal";
 import Loading from "../components/common/Loading";
-import { FaShoppingCart, FaSearch, FaWallet, FaBox } from "react-icons/fa";
+import {
+  FaShoppingCart,
+  FaSearch,
+  FaWallet,
+  FaBox,
+  FaFilter,
+  FaTimes,
+  FaChevronLeft,
+  FaChevronRight,
+  FaShoppingBag,
+  FaTag,
+  FaRuler,
+  FaUser,
+  FaStore,
+  FaStar,
+  FaCheckCircle,
+} from "react-icons/fa";
 import { toastService } from "../utils/toastService";
 
 const ShopPage = () => {
@@ -25,6 +42,26 @@ const ShopPage = () => {
   const [loadingSaldo, setLoadingSaldo] = useState(true);
 
   const { products: allProducts, loading, error } = useProducts({});
+
+  // Escuchar búsqueda desde el header del Navbar
+  useEffect(() => {
+    const handleShopSearch = (event) => {
+      setSearchTerm(event.detail);
+    };
+
+    window.addEventListener("shopSearch", handleShopSearch);
+
+    // Leer parámetro de búsqueda de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get("search");
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+
+    return () => {
+      window.removeEventListener("shopSearch", handleShopSearch);
+    };
+  }, []);
 
   // Cargar carrito y saldo al iniciar
   useEffect(() => {
@@ -139,7 +176,7 @@ const ShopPage = () => {
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 18;
+  const itemsPerPage = 12; // Reducido de 18 a 12 para mejor visualización
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -158,36 +195,53 @@ const ShopPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
-        <div className="container-fluid px-4 py-6">
-          <div className="d-flex justify-content-between align-items-center">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">🛍️ Tienda</h1>
-              <p className="text-blue-100 text-lg">
-                Explora nuestro catálogo de productos
-              </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header moderno mejorado */}
+      <div className="bg-gradient-to-r from-white via-blue-50/30 to-indigo-50/30 border-b-2 border-blue-200 shadow-lg sticky z-20 lg:top-16 top-16">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-6 min-h-[100px]">
+            {/* Título y descripción */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl shadow-lg transform hover:scale-105 transition-transform">
+                <FaShoppingBag className="text-white text-3xl" />
+              </div>
+              <div>
+                <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-2">
+                  Tienda
+                </h1>
+                <p className="text-base sm:text-lg text-gray-600 font-medium hidden sm:block">
+                  {filteredProducts.length} producto
+                  {filteredProducts.length !== 1 ? "s" : ""} disponibles
+                </p>
+              </div>
             </div>
-            <div className="d-flex align-items-center gap-4">
+
+            {/* Acciones del header */}
+            <div className="flex items-center gap-4">
               {!loadingSaldo && (
-                <div className="bg-white/20 rounded-xl px-4 py-2 backdrop-blur-sm">
-                  <div className="d-flex align-items-center gap-2">
-                    <FaWallet />
-                    <span className="font-semibold">
-                      Saldo: {formatCurrency(saldo)}
+                <div className="hidden md:flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-green-50 via-emerald-50 to-green-50 border-2 border-green-300 rounded-xl shadow-md">
+                  <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                    <FaWallet className="text-white text-lg" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-xs text-green-600 font-medium uppercase tracking-wide">
+                      Saldo
+                    </span>
+                    <span className="text-lg font-bold text-green-700">
+                      {formatCurrency(saldo)}
                     </span>
                   </div>
                 </div>
               )}
               <button
                 onClick={() => setShowCart(true)}
-                className="btn btn-light position-relative"
+                className="relative px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all active:scale-95 shadow-lg hover:shadow-xl flex items-center gap-3 font-semibold text-base"
+                aria-label="Ver carrito"
               >
-                <FaShoppingCart className="me-2" />
-                Carrito
+                <FaShoppingCart className="text-xl" />
+                <span className="hidden sm:inline">Carrito</span>
                 {cartItems.length > 0 && (
-                  <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                  <span className="absolute -top-2 -right-2 flex items-center justify-center min-w-[28px] h-7 bg-red-500 text-white text-sm font-bold rounded-full px-2 shadow-md border-2 border-white">
                     {cartItems.length}
                   </span>
                 )}
@@ -197,245 +251,292 @@ const ShopPage = () => {
         </div>
       </div>
 
-      <div className="container-fluid px-4 py-6">
-        <div className="row">
-          {/* Productos - Ocupan toda la pantalla */}
-          <div className="col-12">
-            {/* Filtros */}
-            <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-              <div className="row g-3">
-                <div className="col-md-4">
-                  <div className="input-group">
-                    <span className="input-group-text">
-                      <FaSearch />
-                    </span>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Buscar productos..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <select
-                    className="form-select"
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                  >
-                    <option value="">Todas las categorías</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-md-3">
-                  <select
-                    className="form-select"
-                    value={genderFilter}
-                    onChange={(e) => setGenderFilter(e.target.value)}
-                  >
-                    <option value="">Todos los géneros</option>
-                    <option value="Hombre">Hombre</option>
-                    <option value="Mujer">Mujer</option>
-                    <option value="Unisex">Unisex</option>
-                    <option value="Niño">Niño</option>
-                    <option value="Niña">Niña</option>
-                  </select>
-                </div>
-                <div className="col-md-2">
-                  <button
-                    className="btn btn-outline-secondary w-100"
-                    onClick={() => {
-                      setSearchTerm("");
-                      setCategoryFilter("");
-                      setGenderFilter("");
-                      setCurrentPage(1);
-                    }}
-                  >
-                    Limpiar
-                  </button>
-                </div>
+      {/* Sección de bienvenida */}
+      <div className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white py-16 px-4 sm:px-6 lg:px-8">
+        <div className="w-full">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <div className="w-20 h-20 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <FaStore className="text-5xl" />
               </div>
-              <div className="mt-3 text-muted">
-                Mostrando {filteredProducts.length} producto(s)
+              <h2 className="text-4xl sm:text-5xl font-bold">
+                ¡Bienvenido a nuestra Tienda!
+              </h2>
+            </div>
+            <p className="text-xl sm:text-2xl text-blue-100 mb-4 font-semibold">
+              Descubre nuestra amplia selección de productos de calidad
+            </p>
+            <p className="text-lg text-blue-200 max-w-3xl mx-auto leading-relaxed">
+              Encuentra todo lo que necesitas con los mejores precios y la mejor
+              experiencia de compra. Explora nuestro catálogo y encuentra
+              productos increíbles para ti.
+            </p>
+            <div className="flex items-center justify-center gap-6 mt-8 flex-wrap">
+              <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
+                <FaCheckCircle className="text-green-300" />
+                <span className="text-sm font-medium">
+                  Productos de calidad
+                </span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
+                <FaStar className="text-yellow-300" />
+                <span className="text-sm font-medium">Mejores precios</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-lg backdrop-blur-sm">
+                <FaShoppingBag className="text-blue-200" />
+                <span className="text-sm font-medium">Envío rápido</span>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Tarjetas de productos */}
-            {filteredProducts.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-lg p-5 text-center">
-                <FaBox
-                  className="text-muted mb-3"
-                  style={{ fontSize: "4rem" }}
-                />
-                <h4 className="text-muted">No se encontraron productos</h4>
-                <p className="text-muted">
-                  Intenta ajustar los filtros de búsqueda
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="row g-4 mb-4">
-                  {currentProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="col-sm-6 col-md-4 col-lg-3 col-xl-2"
-                    >
-                      <div className="card h-100 shadow-sm border-0 product-card">
-                        {/* Imagen del producto */}
-                        <div
-                          className="position-relative"
-                          style={{
-                            height: "250px",
-                            overflow: "hidden",
-                            backgroundColor: "#f8f9fa",
-                            borderTopLeftRadius: "0.5rem",
-                            borderTopRightRadius: "0.5rem",
-                          }}
-                        >
-                          {product.imagen_url ? (
-                            <>
-                              <img
-                                src={product.imagen_url}
-                                alt={product.nombre}
-                                className="w-100 h-100"
-                                style={{
-                                  objectFit: "cover",
-                                  transition: "transform 0.3s ease",
-                                }}
-                                onError={(e) => {
-                                  console.error(
-                                    "Error al cargar imagen:",
-                                    product.imagen_url
-                                  );
-                                  e.target.style.display = "none";
-                                  const placeholder =
-                                    e.target.parentElement.querySelector(
-                                      ".image-placeholder"
-                                    );
-                                  if (placeholder) {
-                                    placeholder.style.display = "flex";
-                                  }
-                                }}
-                                onLoad={() => {
-                                  console.log(
-                                    "Imagen cargada exitosamente:",
-                                    product.imombre
-                                  );
-                                }}
-                              />
-                              <div
-                                className="image-placeholder w-100 h-100 d-flex align-items-center justify-content-center position-absolute top-0 start-0"
-                                style={{
-                                  display: "none",
-                                  fontSize: "4rem",
-                                  color: "#dee2e6",
-                                  backgroundColor: "#f8f9fa",
-                                }}
-                              >
-                                <FaBox />
-                              </div>
-                            </>
-                          ) : (
-                            <div
-                              className="w-100 h-100 d-flex align-items-center justify-content-center"
-                              style={{
-                                fontSize: "4rem",
-                                color: "#dee2e6",
-                              }}
-                            >
-                              <FaBox />
-                            </div>
-                          )}
-                          {/* Badge de stock */}
-                          <span
-                            className={`position-absolute top-0 end-0 m-2 badge ${
-                              product.stock > 10
-                                ? "bg-success"
-                                : product.stock > 0
-                                ? "bg-warning"
-                                : "bg-danger"
-                            }`}
-                          >
-                            Stock: {product.stock}
-                          </span>
-                        </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+        {/* Filtros modernos */}
+        <div className="w-full bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
+          <div className="flex items-center gap-2 mb-6">
+            <FaFilter className="text-blue-600 text-lg" />
+            <span className="text-lg font-bold text-gray-900">
+              Filtros de Búsqueda
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Búsqueda */}
+            <div className="relative">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                placeholder="Buscar productos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
 
-                        {/* Contenido de la tarjeta */}
-                        <div className="card-body d-flex flex-column">
-                          <h5 className="card-title mb-2">{product.nombre}</h5>
-                          {product.descripcion && (
-                            <p className="card-text text-muted small mb-2">
-                              {product.descripcion.length > 80
-                                ? `${product.descripcion.substring(0, 80)}...`
-                                : product.descripcion}
-                            </p>
-                          )}
+            {/* Categoría */}
+            <select
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="">Todas las categorías</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
 
-                          {/* Badges de información */}
-                          <div className="mb-3 d-flex flex-wrap gap-2">
-                            {product.categoria && (
-                              <span className="badge bg-secondary">
-                                {product.categoria}
-                              </span>
-                            )}
-                            {product.talla && (
-                              <span className="badge bg-info">
-                                Talla: {product.talla}
-                              </span>
-                            )}
-                            {product.genero && (
-                              <span className="badge bg-primary">
-                                {product.genero}
-                              </span>
-                            )}
-                          </div>
+            {/* Género */}
+            <select
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all bg-white"
+              value={genderFilter}
+              onChange={(e) => setGenderFilter(e.target.value)}
+            >
+              <option value="">Todos los géneros</option>
+              <option value="Hombre">Hombre</option>
+              <option value="Mujer">Mujer</option>
+              <option value="Unisex">Unisex</option>
+              <option value="Niño">Niño</option>
+              <option value="Niña">Niña</option>
+            </select>
 
-                          {/* Precio y botón */}
-                          <div className="mt-auto">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                              <span className="h4 mb-0 text-primary fw-bold">
-                                {formatCurrency(product.precio || 0)}
-                              </span>
-                            </div>
-                            <button
-                              className="btn btn-primary w-100"
-                              onClick={() => handleAddToCart(product)}
-                              disabled={product.stock === 0}
-                            >
-                              <FaShoppingCart className="me-2" />
-                              {product.stock === 0
-                                ? "Sin Stock"
-                                : "Agregar al Carrito"}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+            {/* Botón limpiar */}
+            <button
+              className="flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all text-gray-700 font-medium"
+              onClick={() => {
+                setSearchTerm("");
+                setCategoryFilter("");
+                setGenderFilter("");
+                setCurrentPage(1);
+              }}
+            >
+              <FaTimes className="text-sm" />
+              Limpiar
+            </button>
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-sm text-gray-600">
+              Mostrando{" "}
+              <span className="font-semibold text-gray-900">
+                {filteredProducts.length}
+              </span>{" "}
+              producto{filteredProducts.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
+
+        {/* Tarjetas de productos */}
+        {filteredProducts.length === 0 ? (
+          <div className="w-full bg-white rounded-xl shadow-lg p-16 text-center border border-gray-100">
+            <div className="flex justify-center mb-4">
+              <FaBox className="text-gray-300 text-6xl" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              No se encontraron productos
+            </h3>
+            <p className="text-gray-500">
+              Intenta ajustar los filtros de búsqueda
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mb-12">
+              {currentProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:border-blue-400 hover:-translate-y-2 group flex flex-col"
+                >
+                  {/* Imagen del producto */}
+                  <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+                    {product.imagen_url ? (
+                      <img
+                        src={
+                          storageService.getProductImageUrl(product) ||
+                          product.imagen_url
+                        }
+                        alt={product.nombre}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          console.error(
+                            "Error al cargar imagen del producto:",
+                            {
+                              productId: product.id,
+                              productName: product.nombre,
+                              imagen_url: product.imagen_url,
+                              generatedUrl:
+                                storageService.getProductImageUrl(product),
+                            }
+                          );
+                          e.target.style.display = "none";
+                          const placeholder =
+                            e.target.parentElement.querySelector(
+                              ".image-placeholder"
+                            );
+                          if (placeholder) {
+                            placeholder.style.display = "flex";
+                          }
+                        }}
+                        onLoad={() => {
+                          console.log("Imagen cargada exitosamente:", {
+                            productId: product.id,
+                            productName: product.nombre,
+                            url:
+                              storageService.getProductImageUrl(product) ||
+                              product.imagen_url,
+                          });
+                        }}
+                      />
+                    ) : null}
+                    <div className="image-placeholder w-full h-full hidden items-center justify-center absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200">
+                      <FaBox className="text-gray-400 text-5xl" />
                     </div>
-                  ))}
-                </div>
 
-                {/* Paginación */}
-                {totalPages > 1 && (
-                  <nav aria-label="Paginación de productos">
-                    <ul className="pagination justify-content-center">
-                      <li
-                        className={`page-item ${
-                          currentPage === 1 ? "disabled" : ""
+                    {/* Badge de stock */}
+                    <div className="absolute top-3 right-3 z-10">
+                      <span
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-md backdrop-blur-sm ${
+                          product.stock > 10
+                            ? "bg-green-500/90 text-white"
+                            : product.stock > 0
+                            ? "bg-yellow-500/90 text-white"
+                            : "bg-red-500/90 text-white"
                         }`}
                       >
-                        <button
-                          className="page-link"
-                          onClick={() => setCurrentPage(currentPage - 1)}
-                          disabled={currentPage === 1}
-                        >
-                          Anterior
-                        </button>
-                      </li>
+                        {product.stock} disponibles
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Contenido de la tarjeta */}
+                  <div className="p-6 flex flex-col flex-1">
+                    {/* Nombre del producto */}
+                    <h3 className="text-lg font-bold text-gray-900 mb-4 line-clamp-2 min-h-[3.5rem] leading-tight">
+                      {product.nombre}
+                    </h3>
+
+                    {/* Badges de información */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {product.categoria && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-lg">
+                          <FaTag className="text-xs" />
+                          {product.categoria}
+                        </span>
+                      )}
+                      {product.talla && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg">
+                          <FaRuler className="text-xs" />
+                          {product.talla}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Género */}
+                    {product.genero && (
+                      <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
+                        <FaUser className="text-sm" />
+                        <span className="font-medium">{product.genero}</span>
+                      </div>
+                    )}
+
+                    {/* Precio y botón */}
+                    <div className="mt-auto pt-4 border-t border-gray-100">
+                      <div className="mb-4">
+                        <span className="text-3xl font-bold text-gray-900">
+                          {formatCurrency(product.precio || 0)}
+                        </span>
+                      </div>
+
+                      {/* Botón agregar al carrito */}
+                      <button
+                        className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl transition-all font-semibold text-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                        onClick={() => handleAddToCart(product)}
+                        disabled={product.stock === 0}
+                      >
+                        <FaShoppingCart className="text-base" />
+                        {product.stock === 0
+                          ? "Sin Stock"
+                          : "Agregar al Carrito"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Paginación moderna mejorada */}
+            {totalPages > 1 && (
+              <div className="w-full bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  {/* Información de paginación */}
+                  <div className="text-sm text-gray-600">
+                    Mostrando{" "}
+                    <span className="font-semibold text-gray-900">
+                      {startIndex + 1}
+                    </span>{" "}
+                    -{" "}
+                    <span className="font-semibold text-gray-900">
+                      {Math.min(endIndex, filteredProducts.length)}
+                    </span>{" "}
+                    de{" "}
+                    <span className="font-semibold text-gray-900">
+                      {filteredProducts.length}
+                    </span>{" "}
+                    productos
+                  </div>
+
+                  {/* Controles de paginación */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-gray-700"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <FaChevronLeft className="text-sm" />
+                      <span className="hidden sm:inline">Anterior</span>
+                    </button>
+
+                    <div className="flex items-center gap-2">
                       {[...Array(totalPages)].map((_, index) => {
                         const page = index + 1;
                         // Mostrar solo algunas páginas alrededor de la actual
@@ -445,52 +546,49 @@ const ShopPage = () => {
                           (page >= currentPage - 1 && page <= currentPage + 1)
                         ) {
                           return (
-                            <li
+                            <button
                               key={page}
-                              className={`page-item ${
-                                currentPage === page ? "active" : ""
+                              className={`px-4 py-2.5 min-w-[44px] rounded-xl transition-all font-semibold ${
+                                currentPage === page
+                                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
+                                  : "border-2 border-gray-300 hover:bg-gray-50 hover:border-blue-400 text-gray-700"
                               }`}
+                              onClick={() => setCurrentPage(page)}
                             >
-                              <button
-                                className="page-link"
-                                onClick={() => setCurrentPage(page)}
-                              >
-                                {page}
-                              </button>
-                            </li>
+                              {page}
+                            </button>
                           );
                         } else if (
                           page === currentPage - 2 ||
                           page === currentPage + 2
                         ) {
                           return (
-                            <li key={page} className="page-item disabled">
-                              <span className="page-link">...</span>
-                            </li>
+                            <span
+                              key={page}
+                              className="px-2 text-gray-500 font-medium"
+                            >
+                              ...
+                            </span>
                           );
                         }
                         return null;
                       })}
-                      <li
-                        className={`page-item ${
-                          currentPage === totalPages ? "disabled" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => setCurrentPage(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                        >
-                          Siguiente
-                        </button>
-                      </li>
-                    </ul>
-                  </nav>
-                )}
-              </>
+                    </div>
+
+                    <button
+                      className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-medium text-gray-700"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      <span className="hidden sm:inline">Siguiente</span>
+                      <FaChevronRight className="text-sm" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       {/* Modales */}

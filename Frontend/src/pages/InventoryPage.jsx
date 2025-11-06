@@ -6,6 +6,7 @@ import {
   formatPercentage,
   getRotationBadge,
 } from "../utils/helpers";
+import { storageService } from "../services/storageService";
 import Loading from "../components/common/Loading";
 import { FaBox, FaSearch } from "react-icons/fa";
 
@@ -209,7 +210,11 @@ const InventoryPage = () => {
                                 >
                                   {product.imagen_url ? (
                                     <img
-                                      src={product.imagen_url}
+                                      src={
+                                        storageService.getProductImageUrl(
+                                          product
+                                        ) || product.imagen_url
+                                      }
                                       alt={product.nombre}
                                       style={{
                                         width: "100%",

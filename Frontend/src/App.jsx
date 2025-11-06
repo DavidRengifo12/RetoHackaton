@@ -8,6 +8,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider, useAuthContext } from "./context/AuthContext";
 import Navbar from "./components/common/Navbar";
+import FloatingAssistantButton from "./components/common/FloatingAssistantButton";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -83,67 +84,70 @@ function AppRouter() {
     <Router>
       <ErrorBoundary>
         {isAuthenticated && <Navbar />}
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/inventory"
-            element={
-              <AdminRoute>
-                <InventoryPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/upload"
-            element={
-              <AdminRoute>
-                <UploadPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <ProtectedRoute>
-                <AdminUsersPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/products/add"
-            element={
-              <ProtectedRoute>
-                <AddProductPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/agents"
-            element={
-              <ProtectedRoute>
-                <AgentsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/shop"
-            element={
-              <ProtectedRoute>
-                <ShopPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        {isAuthenticated && <FloatingAssistantButton />}
+        <div className={isAuthenticated ? "main-content-wrapper" : ""}>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/inventory"
+              element={
+                <AdminRoute>
+                  <InventoryPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/upload"
+              element={
+                <AdminRoute>
+                  <UploadPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute>
+                  <AdminUsersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products/add"
+              element={
+                <ProtectedRoute>
+                  <AddProductPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/agents"
+              element={
+                <ProtectedRoute>
+                  <AgentsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/shop"
+              element={
+                <ProtectedRoute>
+                  <ShopPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </div>
         <ToastContainer
           position="top-right"
           autoClose={3000}

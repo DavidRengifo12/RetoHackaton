@@ -88,14 +88,94 @@ export const storageService = {
     if (!filePath) return null;
 
     // Si ya es una URL completa, retornarla
-    if (filePath.startsWith("http")) {
+    if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
       return filePath;
     }
 
-    // Si es una ruta del bucket, obtener URL pública
-    const { data } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+    // Normalizar la ruta del archivo
+    let normalizedPath = filePath;
 
-    return data.publicUrl;
+    // Si la ruta no empieza con "productos/", agregarlo
+    if (!normalizedPath.startsWith("productos/")) {
+      // Si empieza con "/", quitarlo
+      if (normalizedPath.startsWith("/")) {
+        normalizedPath = normalizedPath.substring(1);
+      }
+      // Agregar "productos/" al inicio si no está
+      if (!normalizedPath.startsWith("productos/")) {
+        normalizedPath = `productos/${normalizedPath}`;
+      }
+    }
+
+    // Obtener URL pública de Supabase Storage
+    try {
+      const { data } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(normalizedPath);
+
+      if (data?.publicUrl) {
+        console.log("URL generada para:", normalizedPath, "->", data.publicUrl);
+        return data.publicUrl;
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error al obtener URL pública:", error);
+      return null;
+    }
+  },
+
+  // Obtener URL pública de imagen de producto (helper para productos)
+  getProductImageUrl(product) {
+    if (!product) return null;
+
+    // Si el producto tiene imagen_url, procesarla
+    if (product.imagen_url) {
+      // Intentar obtener URL con la ruta original
+      let url = this.getPublicUrl(product.imagen_url);
+      if (url) {
+        return url;
+      }
+
+      // Si no funcionó, intentar diferentes formatos
+      const imagenUrl = product.imagen_url.trim();
+
+      // Si es solo el nombre del archivo sin ruta
+      if (!imagenUrl.includes("/")) {
+        url = this.getPublicUrl(`productos/${imagenUrl}`);
+        if (url) return url;
+      }
+
+      // Si tiene "productos/" al inicio
+      if (imagenUrl.startsWith("productos/")) {
+        url = this.getPublicUrl(imagenUrl);
+        if (url) return url;
+      }
+
+      // Si tiene "/productos/" en algún lugar
+      if (imagenUrl.includes("/productos/")) {
+        const pathAfterProductos = imagenUrl.split("/productos/")[1];
+        url = this.getPublicUrl(`productos/${pathAfterProductos}`);
+        if (url) return url;
+      }
+
+      // Intentar con el nombre del archivo extraído
+      const fileName = imagenUrl.split("/").pop() || imagenUrl;
+      if (fileName !== imagenUrl) {
+        url = this.getPublicUrl(`productos/${fileName}`);
+        if (url) return url;
+      }
+
+      // Último intento: usar la ruta tal cual
+      console.warn(
+        "No se pudo obtener URL para:",
+        product.imagen_url,
+        "Intentando con ruta directa"
+      );
+      return this.getPublicUrl(imagenUrl);
+    }
+
+    return null;
   },
 
   // Validar archivo antes de subir

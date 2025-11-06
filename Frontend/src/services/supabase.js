@@ -26,6 +26,16 @@ const supabase = createClient(
       storage: typeof window !== "undefined" ? window.localStorage : undefined,
       storageKey: "sb-auth-token",
     },
+    db: {
+      schema: "public",
+    },
+    global: {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+    },
   }
 );
 
