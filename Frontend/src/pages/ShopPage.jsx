@@ -389,48 +389,110 @@ const ShopPage = () => {
                 >
                   {/* Imagen del producto */}
                   <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-                    {product.imagen_url ? (
-                      <img
-                        src={
-                          storageService.getProductImageUrl(product) ||
+                    {(() => {
+                      // Generar URL de la imagen
+                      const imageUrl = product.imagen_url
+                        ? storageService.getProductImageUrl(product) ||
                           product.imagen_url
-                        }
-                        alt={product.nombre}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        onError={(e) => {
-                          console.error(
-                            "Error al cargar imagen del producto:",
-                            {
-                              productId: product.id,
-                              productName: product.nombre,
-                              imagen_url: product.imagen_url,
-                              generatedUrl:
-                                storageService.getProductImageUrl(product),
-                            }
-                          );
-                          e.target.style.display = "none";
-                          const placeholder =
-                            e.target.parentElement.querySelector(
-                              ".image-placeholder"
-                            );
-                          if (placeholder) {
-                            placeholder.style.display = "flex";
+                        : null;
+
+                      // Log para depuración
+                      if (product.imagen_url && !imageUrl) {
+                        console.warn(
+                          "⚠️ No se pudo generar URL para producto:",
+                          {
+                            producto: product.nombre,
+                            imagen_url: product.imagen_url,
                           }
-                        }}
-                        onLoad={() => {
-                          console.log("Imagen cargada exitosamente:", {
-                            productId: product.id,
-                            productName: product.nombre,
-                            url:
-                              storageService.getProductImageUrl(product) ||
-                              product.imagen_url,
-                          });
-                        }}
-                      />
-                    ) : null}
-                    <div className="image-placeholder w-full h-full hidden items-center justify-center absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200">
-                      <FaBox className="text-gray-400 text-5xl" />
-                    </div>
+                        );
+                      }
+
+                      if (imageUrl) {
+                        return (
+                          <>
+                            <img
+                              src={imageUrl}
+                              alt={product.nombre}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              loading="lazy"
+                              onError={(e) => {
+                                // Error más detallado para depuración
+                                const errorInfo = {
+                                  productId: product.id,
+                                  productName: product.nombre,
+                                  imagen_url_original: product.imagen_url,
+                                  generatedUrl: imageUrl,
+                                  error: "La imagen no pudo cargarse.",
+                                  solucion: [
+                                    "1. Ve a Supabase Dashboard > Storage > productos",
+                                    "2. Haz clic en 'Settings' (Configuración)",
+                                    "3. Activa 'Public bucket' (Bucket público)",
+                                    "4. Guarda los cambios",
+                                    "5. Verifica que el archivo exista en la ruta: " +
+                                      product.imagen_url,
+                                  ],
+                                };
+                                console.error(
+                                  "❌ Error al cargar imagen del producto:",
+                                  errorInfo
+                                );
+                                console.error(
+                                  "🔧 SOLUCIÓN:",
+                                  errorInfo.solucion.join("\n")
+                                );
+
+                                // Ocultar imagen y mostrar placeholder
+                                e.target.style.display = "none";
+                                const placeholder =
+                                  e.target.parentElement.querySelector(
+                                    ".image-placeholder"
+                                  );
+                                if (placeholder) {
+                                  placeholder.style.display = "flex";
+                                }
+                              }}
+                              onLoad={(e) => {
+                                // Ocultar placeholder cuando la imagen carga correctamente
+                                const placeholder =
+                                  e.target.parentElement.querySelector(
+                                    ".image-placeholder"
+                                  );
+                                if (placeholder) {
+                                  placeholder.style.display = "none";
+                                }
+                                console.log(
+                                  "✅ Imagen cargada correctamente:",
+                                  {
+                                    producto: product.nombre,
+                                    url: imageUrl,
+                                  }
+                                );
+                              }}
+                            />
+                            <div className="image-placeholder w-full h-full hidden items-center justify-center absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100">
+                              <div className="text-center">
+                                <FaBox className="text-gray-400 text-5xl mx-auto mb-2" />
+                                <p className="text-gray-500 text-sm font-medium">
+                                  Sin imagen
+                                </p>
+                              </div>
+                            </div>
+                          </>
+                        );
+                      } else {
+                        // No hay imagen_url o no se pudo generar URL
+                        return (
+                          <div className="image-placeholder w-full h-full flex items-center justify-center absolute inset-0 bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100">
+                            <div className="text-center">
+                              <FaBox className="text-gray-400 text-5xl mx-auto mb-2" />
+                              <p className="text-gray-500 text-sm font-medium">
+                                Sin imagen
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      }
+                    })()}
 
                     {/* Badge de stock */}
                     <div className="absolute top-3 right-3 z-10">

@@ -17,14 +17,18 @@ import {
   FaDollarSign,
   FaShoppingCart,
   FaUsers,
-  
   FaBoxOpen,
+  FaRobot,
+  FaArrowRight,
+  FaLightbulb,
 } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { salesService } from "../services/salesService";
+import { useNavigate } from "react-router-dom";
 
 const DashboardPage = () => {
   const { user } = useAuthContext();
+  const navigate = useNavigate();
   const {
     topProducts,
     monthlyAverage,
@@ -43,18 +47,10 @@ const DashboardPage = () => {
     averageOrder: 0,
     totalOrders: 0,
   });
-  const [loadingUserStats, setLoadingUserStats] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      loadUserStats();
-    }
-  }, [user]);
-
-  const loadUserStats = async () => {
+  const loadUserStats = useCallback(async () => {
     if (!user) return;
 
-    setLoadingUserStats(true);
     try {
       // Obtener todas las ventas del usuario
       const { data: allSales } = await salesService.getAllSales();
@@ -86,10 +82,14 @@ const DashboardPage = () => {
       });
     } catch (error) {
       console.error("Error al cargar estadísticas del usuario:", error);
-    } finally {
-      setLoadingUserStats(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadUserStats();
+    }
+  }, [user, loadUserStats]);
 
   if (loading) return <Loading message="Cargando dashboard..." />;
   if (error) {
@@ -148,6 +148,81 @@ const DashboardPage = () => {
       </div>
 
       <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 py-8">
+        {/* Banner de Recordatorio sobre Agentes - Solo para Administradores */}
+        {isAdmin && (
+          <div className="mb-8 relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 shadow-2xl border-2 border-blue-400/50">
+            <div className="absolute inset-0 bg-black/10"></div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-400/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
+
+            <div className="relative p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                {/* Icono */}
+                <div className="flex-shrink-0">
+                  <div className="bg-white/20 backdrop-blur-md p-4 rounded-2xl shadow-lg border-2 border-white/30 animate-pulse">
+                    <FaRobot className="text-4xl sm:text-5xl text-white" />
+                  </div>
+                </div>
+
+                {/* Contenido */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FaLightbulb className="text-yellow-300 text-xl sm:text-2xl" />
+                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white drop-shadow-lg">
+                      ¡Aprovecha al máximo la aplicación!
+                    </h3>
+                  </div>
+                  <p className="text-blue-100 text-base sm:text-lg mb-4 leading-relaxed">
+                    Utiliza nuestros{" "}
+                    <strong className="text-white">Agentes Inteligentes</strong>{" "}
+                    para consultar productos, analizar ventas, gestionar
+                    inventario y obtener respuestas rápidas a tus preguntas. Los
+                    agentes te ayudan a trabajar de manera más eficiente y
+                    aprovechar todas las funcionalidades de la plataforma.
+                  </p>
+
+                  {/* Características rápidas */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                      <div className="flex items-center gap-2 text-white text-sm font-medium">
+                        <FaBoxOpen className="text-blue-200" />
+                        <span>Consultar Inventario</span>
+                      </div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                      <div className="flex items-center gap-2 text-white text-sm font-medium">
+                        <FaChartLine className="text-indigo-200" />
+                        <span>Analizar Ventas</span>
+                      </div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                      <div className="flex items-center gap-2 text-white text-sm font-medium">
+                        <FaRobot className="text-purple-200" />
+                        <span>Consultas Inteligentes</span>
+                      </div>
+                    </div>
+                    <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20">
+                      <div className="flex items-center gap-2 text-white text-sm font-medium">
+                        <FaLightbulb className="text-yellow-200" />
+                        <span>Respuestas Rápidas</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Botón de acción */}
+                  <button
+                    onClick={() => navigate("/agents")}
+                    className="group inline-flex items-center gap-3 bg-white text-blue-600 px-6 py-3 rounded-xl font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 hover:bg-blue-50"
+                  >
+                    <span>Explorar Agentes</span>
+                    <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Sección: Indicadores Clave (KPIs) - Mejorado */}
         <div className="mb-10">
           <div className="mb-6">

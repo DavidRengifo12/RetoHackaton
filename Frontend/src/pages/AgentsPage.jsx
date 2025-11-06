@@ -33,6 +33,14 @@ export default function AgentsPage() {
       icon: FaBox,
       nombre: "Agente de Inventario",
       descripcion: "Consulta productos, stock, tallas y precios",
+      descripcionLarga:
+        "Este agente te ayuda a consultar información detallada sobre productos, verificar el stock disponible, revisar tallas y precios. Puedes preguntarle sobre disponibilidad de productos, buscar por categoría, género o talla, y obtener información completa del inventario.",
+      ejemplos: [
+        "¿Qué productos tenemos en stock?",
+        "¿Cuántas camisetas talla M tenemos?",
+        "Muéstrame todos los productos de la categoría Ropa",
+        "¿Qué precio tiene el producto X?",
+      ],
       color: "blue",
       componente: <ChatInventario />,
     },
@@ -40,20 +48,43 @@ export default function AgentsPage() {
       icon: FaChartLine,
       nombre: "Agente Analista",
       descripcion: "Analiza ventas, rotación y rendimiento de productos",
+      descripcionLarga:
+        "Este agente analiza las ventas, calcula la rotación de productos, identifica los más vendidos y genera reportes de rendimiento. Te ayuda a tomar decisiones informadas sobre qué productos están funcionando mejor y cuáles necesitan atención.",
+      ejemplos: [
+        "¿Cuáles son los productos más vendidos?",
+        "Muéstrame el análisis de rotación de productos",
+        "¿Qué productos tienen mejor rendimiento?",
+        "Dame un reporte de ventas del último mes",
+      ],
       color: "indigo",
       componente: <ChatAnalista />,
     },
     mcp: {
       icon: FaHandshake,
-      nombre: "MCP Manager (Agent-to-Agent)",
+      nombre: "Agente Coordinador",
       descripcion: "Coordina múltiples agentes para consultas complejas",
+      descripcionLarga:
+        "Este agente coordina y combina información de varios agentes especializados para responder consultas complejas que requieren análisis de inventario y ventas simultáneamente. Es ideal cuando necesitas una respuesta completa que combine datos de productos y análisis de rendimiento.",
+      ejemplos: [
+        "¿Qué productos tenemos con bajo stock y cómo están vendiendo?",
+        "Dame un análisis completo de inventario y ventas",
+        "¿Cuáles productos necesitan reposición y cuál es su rendimiento?",
+      ],
       color: "green",
       componente: <ChatMCP />,
     },
     cliente: {
       icon: FaComments,
-      nombre: "Agente Cliente",
+      nombre: "Agente Asistente",
       descripcion: "Asistente principal que enruta consultas inteligentemente",
+      descripcionLarga:
+        "Este es tu asistente principal que entiende tu pregunta y la dirige al agente especializado más adecuado. Puede ayudarte con consultas generales sobre productos, compras, disponibilidad y más. Es el punto de entrada ideal para cualquier consulta.",
+      ejemplos: [
+        "¿Qué productos tienen disponibles?",
+        "Quiero comprar una camiseta",
+        "Ayúdame a encontrar productos",
+        "¿Cuánto cuesta el producto X?",
+      ],
       color: "purple",
       componente: <ChatCliente />,
     },
@@ -74,20 +105,59 @@ export default function AgentsPage() {
   const agentes = isAdmin ? agentesAdmin : agentesUsuario;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header Moderno */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
+    <div
+      className="min-h-screen"
+      style={{
+        background:
+          "linear-gradient(to bottom right, #eff6ff, #eef2ff, #faf5ff)",
+      }}
+    >
+      {/* Header Moderno Mejorado */}
+      <div
+        className="text-white shadow-xl position-relative overflow-hidden"
+        style={{
+          background: "linear-gradient(to right, #2563eb, #4f46e5, #9333ea)",
+        }}
+      >
+        <div
+          className="position-absolute w-100 h-100"
+          style={{
+            top: 0,
+            left: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.1)",
+          }}
+        ></div>
+        <div
+          className="container-fluid px-4 py-4 position-relative"
+          style={{ zIndex: 10 }}
+        >
           <div className="text-center">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                <FaRobot className="text-4xl" />
+            <div
+              className="d-flex align-items-center justify-content-center mb-4"
+              style={{ gap: "1rem" }}
+            >
+              <div
+                className="rounded-3 shadow-lg d-flex align-items-center justify-content-center"
+                style={{
+                  width: "64px",
+                  height: "64px",
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
+                <FaRobot
+                  className="text-white"
+                  style={{ fontSize: "2.5rem" }}
+                />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold">
+              <h1 className="text-4xl fw-bold mb-0">
                 Sistema de Agentes Inteligentes
               </h1>
             </div>
-            <p className="text-blue-100 text-xl max-w-3xl mx-auto">
+            <p
+              className="text-lg mb-0"
+              style={{ color: "#bfdbfe", maxWidth: "800px", margin: "0 auto" }}
+            >
               Sistema multi-agente con coordinación inteligente y respuestas
               naturales
             </p>
@@ -95,64 +165,93 @@ export default function AgentsPage() {
         </div>
       </div>
 
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container-fluid px-4 py-4">
         {/* Overview Cards */}
         {agenteActivo === "overview" && (
-          <div
-            className={`grid grid-cols-1 md:grid-cols-2 ${
-              isAdmin ? "lg:grid-cols-4" : "lg:grid-cols-1"
-            } gap-6 mb-8`}
-          >
+          <div className="row g-4 mb-4">
             {Object.entries(agentes).map(([key, agente]) => {
               const IconComponent = agente.icon;
+              const colorClasses = {
+                blue: {
+                  bg: "bg-blue-100",
+                  text: "text-blue-600",
+                  border: "border-blue-200",
+                  hoverBorder: "border-blue-500",
+                  button: "bg-blue-600 hover:bg-blue-700",
+                },
+                indigo: {
+                  bg: "bg-indigo-100",
+                  text: "text-indigo-600",
+                  border: "border-indigo-200",
+                  hoverBorder: "border-indigo-500",
+                  button: "bg-indigo-600 hover:bg-indigo-700",
+                },
+                green: {
+                  bg: "bg-green-100",
+                  text: "text-green-600",
+                  border: "border-green-200",
+                  hoverBorder: "border-green-500",
+                  button: "bg-green-600 hover:bg-green-700",
+                },
+                purple: {
+                  bg: "bg-purple-100",
+                  text: "text-purple-600",
+                  border: "border-purple-200",
+                  hoverBorder: "border-purple-500",
+                  button: "bg-purple-600 hover:bg-purple-700",
+                },
+              };
+              const colors = colorClasses[agente.color] || colorClasses.blue;
+
               return (
                 <div
                   key={key}
-                  onClick={() => setAgenteActivo(key)}
-                  className={`bg-white rounded-xl shadow-lg p-8 cursor-pointer hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 ${
-                    agente.color === "blue"
-                      ? "hover:border-blue-500 border-blue-100"
-                      : agente.color === "indigo"
-                      ? "hover:border-indigo-500 border-indigo-100"
-                      : agente.color === "green"
-                      ? "hover:border-green-500 border-green-100"
-                      : "hover:border-purple-500 border-purple-100"
+                  className={`col-12 ${
+                    isAdmin ? "col-md-6 col-lg-3" : "col-md-6 col-lg-4"
                   }`}
                 >
-                  <div className="flex justify-center mb-6">
-                    <div
-                      className={`w-20 h-20 rounded-xl flex items-center justify-center ${
-                        agente.color === "blue"
-                          ? "bg-blue-100 text-blue-600"
-                          : agente.color === "indigo"
-                          ? "bg-indigo-100 text-indigo-600"
-                          : agente.color === "green"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-purple-100 text-purple-600"
-                      }`}
-                    >
-                      <IconComponent className="text-4xl" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3 text-center">
-                    {agente.nombre}
-                  </h3>
-                  <p className="text-gray-600 text-center mb-6 min-h-[3rem]">
-                    {agente.descripcion}
-                  </p>
-                  <button
-                    className={`w-full text-white py-3 px-4 rounded-lg font-semibold transition-all active:scale-95 ${
-                      agente.color === "blue"
-                        ? "bg-blue-600 hover:bg-blue-700"
-                        : agente.color === "indigo"
-                        ? "bg-indigo-600 hover:bg-indigo-700"
-                        : agente.color === "green"
-                        ? "bg-green-600 hover:bg-green-700"
-                        : "bg-purple-600 hover:bg-purple-700"
-                    }`}
+                  <div
+                    onClick={() => setAgenteActivo(key)}
+                    className={`bg-white rounded-3 shadow-lg p-4 cursor-pointer border-2 ${colors.border} hover:shadow-xl transition-all ${colors.hoverBorder}`}
+                    style={{
+                      minHeight: "320px",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = "translateY(-4px)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "translateY(0)";
+                    }}
                   >
-                    Usar Agente
-                  </button>
+                    <div className="d-flex justify-content-center mb-4">
+                      <div
+                        className={`rounded-3 d-flex align-items-center justify-content-center ${colors.bg} ${colors.text}`}
+                        style={{
+                          width: "80px",
+                          height: "80px",
+                        }}
+                      >
+                        <IconComponent style={{ fontSize: "2.5rem" }} />
+                      </div>
+                    </div>
+                    <h3 className="text-xl fw-bold text-dark mb-3 text-center">
+                      {agente.nombre}
+                    </h3>
+                    <p
+                      className="text-muted text-center mb-4 flex-grow-1"
+                      style={{ minHeight: "3rem" }}
+                    >
+                      {agente.descripcion}
+                    </p>
+                    <button
+                      className={`w-100 text-white py-3 px-4 rounded-3 fw-semibold transition-all ${colors.button}`}
+                      style={{ cursor: "pointer" }}
+                    >
+                      Usar Agente
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -167,40 +266,81 @@ export default function AgentsPage() {
               className="mb-6 flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors font-medium"
             >
               <FaArrowLeft />
-              Volver a Overview
+              Volver a Agentes
             </button>
-            <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
-              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200">
-                {agentes[agenteActivo] && (
-                  <>
-                    <div
-                      className={`w-16 h-16 rounded-xl flex items-center justify-center ${
-                        agentes[agenteActivo].color === "blue"
-                          ? "bg-blue-100 text-blue-600"
-                          : agentes[agenteActivo].color === "indigo"
-                          ? "bg-indigo-100 text-indigo-600"
-                          : agentes[agenteActivo].color === "green"
-                          ? "bg-green-100 text-green-600"
-                          : "bg-purple-100 text-purple-600"
-                      }`}
-                    >
-                      {(() => {
-                        const IconComponent = agentes[agenteActivo].icon;
-                        return <IconComponent className="text-3xl" />;
-                      })()}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              {/* Header del Agente */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 border-b border-gray-200">
+                <div className="flex items-center gap-4 mb-4">
+                  <div
+                    className={`w-16 h-16 rounded-xl flex items-center justify-center shadow-md ${
+                      agentes[agenteActivo].color === "blue"
+                        ? "bg-blue-100 text-blue-600"
+                        : agentes[agenteActivo].color === "indigo"
+                        ? "bg-indigo-100 text-indigo-600"
+                        : agentes[agenteActivo].color === "green"
+                        ? "bg-green-100 text-green-600"
+                        : "bg-purple-100 text-purple-600"
+                    }`}
+                  >
+                    {(() => {
+                      const IconComponent = agentes[agenteActivo].icon;
+                      return <IconComponent className="text-3xl" />;
+                    })()}
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-1">
+                      {agentes[agenteActivo].nombre}
+                    </h2>
+                    <p className="text-gray-600 text-lg">
+                      {agentes[agenteActivo].descripcion}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Descripción detallada */}
+                {agentes[agenteActivo].descripcionLarga && (
+                  <div className="mt-4 p-4 bg-white rounded-lg border border-gray-200">
+                    <div className="flex items-start gap-3 mb-3">
+                      <FaInfoCircle className="text-blue-600 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-2">
+                          ¿Para qué sirve este agente?
+                        </h3>
+                        <p className="text-gray-700 leading-relaxed">
+                          {agentes[agenteActivo].descripcionLarga}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h2 className="text-3xl font-bold text-gray-900">
-                        {agentes[agenteActivo].nombre}
-                      </h2>
-                      <p className="text-gray-600 mt-1">
-                        {agentes[agenteActivo].descripcion}
-                      </p>
-                    </div>
-                  </>
+
+                    {/* Ejemplos de uso */}
+                    {agentes[agenteActivo].ejemplos && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                          <FaSearch className="text-gray-500" />
+                          Ejemplos de preguntas que puedes hacer:
+                        </h4>
+                        <ul className="space-y-2">
+                          {agentes[agenteActivo].ejemplos.map(
+                            (ejemplo, index) => (
+                              <li
+                                key={index}
+                                className="flex items-start gap-2 text-gray-700"
+                              >
+                                <span className="text-blue-600 mt-1">•</span>
+                                <span className="flex-1">{ejemplo}</span>
+                              </li>
+                            )
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
-              {agentes[agenteActivo]?.componente}
+
+              {/* Componente del Chat */}
+              <div className="p-6">{agentes[agenteActivo]?.componente}</div>
             </div>
           </div>
         )}
@@ -240,15 +380,17 @@ export default function AgentsPage() {
                   <li className="flex items-start gap-3">
                     <FaHandshake className="text-green-600 mt-1 flex-shrink-0" />
                     <div>
-                      <strong className="text-green-600">MCP:</strong>{" "}
-                      Coordinación entre múltiples agentes
+                      <strong className="text-green-600">Coordinador:</strong>{" "}
+                      Combina información de múltiples agentes para consultas
+                      complejas
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
                     <FaComments className="text-purple-600 mt-1 flex-shrink-0" />
                     <div>
-                      <strong className="text-purple-600">Cliente:</strong>{" "}
+                      <strong className="text-purple-600">Asistente:</strong>{" "}
                       Punto de entrada principal que enruta consultas
+                      inteligentemente
                     </div>
                   </li>
                 </ul>
@@ -267,7 +409,9 @@ export default function AgentsPage() {
                   </li>
                   <li className="flex items-center gap-3">
                     <FaCheckCircle className="text-green-500 flex-shrink-0" />
-                    <span>Coordinación Agent-to-Agent</span>
+                    <span>
+                      Coordinación entre múltiples agentes especializados
+                    </span>
                   </li>
                   <li className="flex items-center gap-3">
                     <FaCheckCircle className="text-green-500 flex-shrink-0" />

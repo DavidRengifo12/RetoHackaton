@@ -92,4 +92,92 @@ export const productService = {
     const { error } = await supabase.from("productos").delete().eq("id", id);
     return { error };
   },
+
+  // Crear múltiples productos (bulk insert)
+  async createBulkProducts(productos) {
+    try {
+      toastService.info(`Procesando ${productos.length} productos...`);
+
+      // Procesar productos en lotes para evitar problemas de tamaño
+      const batchSize = 50;
+      const batches = [];
+      for (let i = 0; i < productos.length; i += batchSize) {
+        batches.push(productos.slice(i, i + batchSize));
+      }
+
+      let totalInserted = 0;
+      const errors = [];
+
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+
+        try {
+          const { data, error } = await supabase
+            .from("productos")
+            .insert(batch)
+            .select();
+
+          if (error) {
+            // Si hay error de SKU duplicado, intentar insertar uno por uno
+            if (
+              error.code === "23505" ||
+              error.message.includes("duplicate") ||
+              error.message.includes("unique")
+            ) {
+              toastService.info(
+                `Algunos productos tienen SKU duplicado, insertando individualmente...`
+              );
+
+              for (const producto of batch) {
+                try {
+                  const { data: singleData, error: singleError } =
+                    await supabase
+                      .from("productos")
+                      .insert([producto])
+                      .select();
+
+                  if (singleError) {
+                    errors.push(
+                      `Error al insertar ${producto.nombre}: ${singleError.message}`
+                    );
+                  } else {
+                    totalInserted++;
+                  }
+                } catch (err) {
+                  errors.push(
+                    `Error al insertar ${producto.nombre}: ${err.message}`
+                  );
+                }
+              }
+            } else {
+              throw error;
+            }
+          } else {
+            totalInserted += data.length;
+          }
+        } catch (err) {
+          errors.push(`Error en lote ${i + 1}: ${err.message}`);
+        }
+      }
+
+      if (totalInserted > 0) {
+        toastService.success(
+          `✅ ${totalInserted} productos cargados exitosamente\n` +
+            (errors.length > 0
+              ? `⚠️ ${errors.length} errores durante la importación`
+              : "")
+        );
+      } else {
+        throw new Error("No se pudo insertar ningún producto");
+      }
+
+      return {
+        data: { inserted: totalInserted, errors },
+        error: errors.length > 0 ? errors : null,
+      };
+    } catch (error) {
+      toastService.error("Error al cargar productos: " + error.message);
+      return { data: null, error };
+    }
+  },
 };

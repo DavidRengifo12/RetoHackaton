@@ -8,6 +8,15 @@ export const storageService = {
   // Subir imagen de producto
   async uploadProductImage(file, productId) {
     try {
+      // Verificar que el usuario esté autenticado
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error("Debes iniciar sesión para subir imágenes");
+      }
+
       // Validar que el archivo sea una imagen
       if (!file.type.startsWith("image/")) {
         throw new Error("El archivo debe ser una imagen");
@@ -35,10 +44,28 @@ export const storageService = {
         });
 
       if (error) {
-        // Si el bucket no existe, intentar crearlo
+        // Manejar diferentes tipos de errores
         if (error.message.includes("Bucket not found")) {
           toastService.error(
             "El bucket de almacenamiento no existe. Por favor créalo en Supabase Storage."
+          );
+        } else if (
+          error.message.includes("row-level security policy") ||
+          error.message.includes("violates row-level security")
+        ) {
+          toastService.error(
+            "Error de permisos: Las políticas de seguridad están bloqueando la subida. Verifica que las políticas RLS estén configuradas correctamente."
+          );
+          console.error(
+            "Error RLS - Verifica que las políticas de storage estén configuradas:",
+            error
+          );
+        } else if (
+          error.message.includes("JWT") ||
+          error.message.includes("token")
+        ) {
+          toastService.error(
+            "Error de autenticación: Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
           );
         }
         throw error;
@@ -85,96 +112,132 @@ export const storageService = {
 
   // Obtener URL pública de una imagen
   getPublicUrl(filePath) {
-    if (!filePath) return null;
+    if (!filePath) {
+      console.warn("getPublicUrl: filePath es null o undefined");
+      return null;
+    }
 
     // Si ya es una URL completa, retornarla
     if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+      console.log("getPublicUrl: Ya es una URL completa:", filePath);
       return filePath;
     }
 
     // Normalizar la ruta del archivo
-    let normalizedPath = filePath;
+    let normalizedPath = filePath.trim();
+
+    // Si empieza con "/", quitarlo
+    if (normalizedPath.startsWith("/")) {
+      normalizedPath = normalizedPath.substring(1);
+    }
 
     // Si la ruta no empieza con "productos/", agregarlo
     if (!normalizedPath.startsWith("productos/")) {
-      // Si empieza con "/", quitarlo
-      if (normalizedPath.startsWith("/")) {
-        normalizedPath = normalizedPath.substring(1);
-      }
-      // Agregar "productos/" al inicio si no está
-      if (!normalizedPath.startsWith("productos/")) {
-        normalizedPath = `productos/${normalizedPath}`;
-      }
+      normalizedPath = `productos/${normalizedPath}`;
     }
 
     // Obtener URL pública de Supabase Storage
     try {
-      const { data } = supabase.storage
+      const { data, error } = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(normalizedPath);
 
+      if (error) {
+        console.error("❌ Error al obtener URL pública:", {
+          error,
+          filePath,
+          normalizedPath,
+          bucket: BUCKET_NAME,
+        });
+        return null;
+      }
+
       if (data?.publicUrl) {
-        console.log("URL generada para:", normalizedPath, "->", data.publicUrl);
+        console.log("✅ URL pública generada:", {
+          ruta_original: filePath,
+          ruta_normalizada: normalizedPath,
+          url_publica: data.publicUrl,
+        });
         return data.publicUrl;
       }
 
+      console.warn("⚠️ getPublicUrl: No se obtuvo publicUrl para:", {
+        filePath,
+        normalizedPath,
+        bucket: BUCKET_NAME,
+        data,
+      });
       return null;
     } catch (error) {
-      console.error("Error al obtener URL pública:", error);
+      console.error("❌ Error al obtener URL pública (catch):", {
+        error,
+        filePath,
+        normalizedPath,
+        bucket: BUCKET_NAME,
+      });
       return null;
     }
   },
 
   // Obtener URL pública de imagen de producto (helper para productos)
   getProductImageUrl(product) {
-    if (!product) return null;
-
-    // Si el producto tiene imagen_url, procesarla
-    if (product.imagen_url) {
-      // Intentar obtener URL con la ruta original
-      let url = this.getPublicUrl(product.imagen_url);
-      if (url) {
-        return url;
-      }
-
-      // Si no funcionó, intentar diferentes formatos
-      const imagenUrl = product.imagen_url.trim();
-
-      // Si es solo el nombre del archivo sin ruta
-      if (!imagenUrl.includes("/")) {
-        url = this.getPublicUrl(`productos/${imagenUrl}`);
-        if (url) return url;
-      }
-
-      // Si tiene "productos/" al inicio
-      if (imagenUrl.startsWith("productos/")) {
-        url = this.getPublicUrl(imagenUrl);
-        if (url) return url;
-      }
-
-      // Si tiene "/productos/" en algún lugar
-      if (imagenUrl.includes("/productos/")) {
-        const pathAfterProductos = imagenUrl.split("/productos/")[1];
-        url = this.getPublicUrl(`productos/${pathAfterProductos}`);
-        if (url) return url;
-      }
-
-      // Intentar con el nombre del archivo extraído
-      const fileName = imagenUrl.split("/").pop() || imagenUrl;
-      if (fileName !== imagenUrl) {
-        url = this.getPublicUrl(`productos/${fileName}`);
-        if (url) return url;
-      }
-
-      // Último intento: usar la ruta tal cual
+    if (!product || !product.imagen_url) {
       console.warn(
-        "No se pudo obtener URL para:",
-        product.imagen_url,
-        "Intentando con ruta directa"
+        "getProductImageUrl: Producto sin imagen_url",
+        product?.nombre
       );
-      return this.getPublicUrl(imagenUrl);
+      return null;
     }
 
+    const imagenUrl = product.imagen_url.trim();
+
+    // Si ya es una URL completa (http/https), retornarla directamente
+    if (imagenUrl.startsWith("http://") || imagenUrl.startsWith("https://")) {
+      console.log("✅ URL completa detectada:", imagenUrl);
+      return imagenUrl;
+    }
+
+    // Normalizar la ruta: asegurarse de que tenga el formato "productos/archivo.jpg"
+    let normalizedPath = imagenUrl;
+
+    // Si empieza con "/", quitarlo
+    if (normalizedPath.startsWith("/")) {
+      normalizedPath = normalizedPath.substring(1);
+    }
+
+    // Si no empieza con "productos/", agregarlo
+    if (!normalizedPath.startsWith("productos/")) {
+      // Si tiene "/productos/" en algún lugar, extraer la parte después
+      if (normalizedPath.includes("/productos/")) {
+        normalizedPath = "productos/" + normalizedPath.split("/productos/")[1];
+      } else if (normalizedPath.includes("/")) {
+        // Si tiene otras rutas, tomar solo el nombre del archivo
+        normalizedPath = "productos/" + normalizedPath.split("/").pop();
+      } else {
+        // Si es solo el nombre del archivo, agregar "productos/"
+        normalizedPath = "productos/" + normalizedPath;
+      }
+    }
+
+    // Generar URL pública
+    const url = this.getPublicUrl(normalizedPath);
+
+    if (url) {
+      console.log("✅ URL generada para producto:", {
+        producto: product.nombre,
+        imagen_url_original: imagenUrl,
+        ruta_normalizada: normalizedPath,
+        url_generada: url,
+        nota: "Si la imagen no carga, verifica que el bucket 'productos' esté marcado como PÚBLICO en Supabase Dashboard > Storage > productos > Settings > Public bucket",
+      });
+      return url;
+    }
+
+    console.error("❌ No se pudo obtener URL para:", {
+      producto: product.nombre,
+      imagen_url: imagenUrl,
+      ruta_normalizada: normalizedPath,
+    });
     return null;
   },
 

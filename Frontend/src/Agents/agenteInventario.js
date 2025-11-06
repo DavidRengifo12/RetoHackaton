@@ -104,30 +104,98 @@ export async function agenteInventario(pregunta) {
     return respuesta;
   }
 
-  // 4️⃣ PRIORIDAD 3: Búsqueda inteligente por palabras
-  // Extraer palabras clave de la pregunta (incluir palabras cortas también)
-  const palabrasClave = consulta.split(/\s+/).filter(
-    (palabra) =>
-      palabra.length > 1 && // Palabras de más de 1 carácter (incluye "camisa", "azul", etc.)
-      ![
-        "tienen",
-        "tiene",
-        "hay",
-        "quiero",
-        "busco",
-        "necesito",
-        "que",
-        "qué",
-        "de",
-        "la",
-        "el",
-        "un",
-        "una",
-      ].includes(palabra)
+  // 4️⃣ PRIORIDAD 3: Detectar consultas sobre precios específicos
+  const palabrasPrecio = [
+    "precio",
+    "cuesta",
+    "vale",
+    "costo",
+    "cuánto",
+    "cuanto",
+    "precio tiene",
+    "precio del",
+    "precio de la",
+    "precio de",
+  ];
+
+  const esConsultaPrecio = palabrasPrecio.some((palabra) =>
+    consulta.includes(palabra)
   );
 
-  // Si no hay palabras clave después del filtro, usar la consulta completa
-  const palabrasABuscar = palabrasClave.length > 0 ? palabrasClave : [consulta];
+  // Si es consulta de precio, extraer el nombre del producto de manera más inteligente
+  let palabrasABuscar = [];
+  if (esConsultaPrecio) {
+    // Remover palabras relacionadas con precio y preguntas
+    const palabrasARemover = [
+      "precio",
+      "cuesta",
+      "vale",
+      "costo",
+      "cuánto",
+      "cuanto",
+      "tiene",
+      "tienen",
+      "hay",
+      "que",
+      "qué",
+      "del",
+      "de",
+      "la",
+      "el",
+      "un",
+      "una",
+      "producto",
+      "productos",
+      "es",
+      "son",
+    ];
+
+    // Extraer palabras que NO están en la lista de palabras a remover
+    palabrasABuscar = consulta
+      .split(/\s+/)
+      .filter(
+        (palabra) =>
+          palabra.length > 0 &&
+          !palabrasARemover.some((remover) =>
+            palabra.toLowerCase().includes(remover.toLowerCase())
+          )
+      )
+      .map((p) => p.toLowerCase().trim())
+      .filter((p) => p.length > 0);
+
+    // Si después de filtrar no quedan palabras o solo quedan palabras genéricas de una letra, limpiar
+    if (
+      palabrasABuscar.length === 0 ||
+      palabrasABuscar.every((p) => p.length <= 1 || p === "x")
+    ) {
+      palabrasABuscar = [];
+    }
+  } else {
+    // 5️⃣ PRIORIDAD 4: Búsqueda inteligente por palabras (caso general)
+    // Extraer palabras clave de la pregunta (incluir palabras cortas también)
+    const palabrasClave = consulta.split(/\s+/).filter(
+      (palabra) =>
+        palabra.length > 1 && // Palabras de más de 1 carácter (incluye "camisa", "azul", etc.)
+        ![
+          "tienen",
+          "tiene",
+          "hay",
+          "quiero",
+          "busco",
+          "necesito",
+          "que",
+          "qué",
+          "de",
+          "la",
+          "el",
+          "un",
+          "una",
+        ].includes(palabra)
+    );
+
+    // Si no hay palabras clave después del filtro, usar la consulta completa
+    palabrasABuscar = palabrasClave.length > 0 ? palabrasClave : [consulta];
+  }
 
   // Función para normalizar palabras (quitar plurales y acentos)
   const normalizarPalabra = (palabra) => {
@@ -202,26 +270,96 @@ export async function agenteInventario(pregunta) {
     });
   };
 
-  // Buscar productos
-  let encontrados = buscarPorPalabras(palabrasABuscar);
+  // Buscar productos (solo si hay palabras para buscar)
+  let encontrados = [];
+  if (palabrasABuscar.length > 0) {
+    encontrados = buscarPorPalabras(palabrasABuscar);
 
-  // Si no se encontraron resultados, intentar con la consulta completa sin filtrar
-  if (encontrados.length === 0) {
-    encontrados = productos.filter((producto) => {
-      const nombreLower = (producto.nombre || "").toLowerCase();
-      const categoriaLower = (producto.categoria || "").toLowerCase();
-      const generoLower = (producto.genero || "").toLowerCase();
+    // Si no se encontraron resultados, intentar búsqueda más flexible
+    if (encontrados.length === 0) {
+      // Intentar búsqueda parcial con cada palabra individualmente
+      for (const palabra of palabrasABuscar) {
+        const parciales = productos.filter((producto) => {
+          const nombreLower = (producto.nombre || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          const categoriaLower = (producto.categoria || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          const generoLower = (producto.genero || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
 
-      return (
-        nombreLower.includes(consulta) ||
-        categoriaLower.includes(consulta) ||
-        generoLower.includes(consulta)
-      );
-    });
+          const palabraLower = palabra
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+          return (
+            nombreLower.includes(palabraLower) ||
+            palabraLower.includes(nombreLower) ||
+            categoriaLower.includes(palabraLower) ||
+            generoLower.includes(palabraLower)
+          );
+        });
+
+        if (parciales.length > 0) {
+          encontrados = parciales;
+          break;
+        }
+      }
+
+      // Si aún no hay resultados, intentar con la consulta completa sin filtrar
+      if (encontrados.length === 0) {
+        encontrados = productos.filter((producto) => {
+          const nombreLower = (producto.nombre || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          const categoriaLower = (producto.categoria || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+          const generoLower = (producto.genero || "")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+          const consultaNormalizada = consulta
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+          return (
+            nombreLower.includes(consultaNormalizada) ||
+            categoriaLower.includes(consultaNormalizada) ||
+            generoLower.includes(consultaNormalizada)
+          );
+        });
+      }
+    }
   }
 
+  // Si encontramos productos, formatear la respuesta
   if (encontrados.length > 0) {
-    const respuestas = encontrados.map((p) => {
+    // Si es consulta de precio y hay un solo producto, dar respuesta más enfocada
+    if (esConsultaPrecio && encontrados.length === 1) {
+      const p = encontrados[0];
+      const respuestaBase = `💲 El precio de "${p.nombre}"${
+        p.talla ? ` (${p.talla})` : ""
+      } es $${p.precio}\n\n📦 Stock disponible: ${p.stock} unidades${
+        p.alerta_stock_bajo ? " ⚠️ (Stock bajo)" : ""
+      }`;
+      return await mejorarRespuestaConOpenAI(
+        respuestaBase,
+        `Rol: Agente de Inventario. Consulta sobre precio de producto específico. Producto encontrado: ${p.nombre}.`
+      );
+    }
+
+    // Respuesta estándar para múltiples productos o búsquedas generales
+    const respuestas = encontrados.slice(0, 10).map((p) => {
       let r = `👕 ${p.nombre}${p.talla ? ` (${p.talla})` : ""}\n`;
       r += `📦 Stock: ${p.stock} unidades\n`;
       r += `💲 Precio: $${p.precio}\n`;
@@ -231,19 +369,119 @@ export async function agenteInventario(pregunta) {
       return r;
     });
 
-    const respuestaBase = respuestas.join("\n----------------------\n");
+    let respuestaBase = respuestas.join("\n----------------------\n");
+    if (encontrados.length > 10) {
+      respuestaBase += `\n\n... y ${encontrados.length - 10} producto(s) más.`;
+    }
+
     return await mejorarRespuestaConOpenAI(
       respuestaBase,
-      `Rol: Agente de Inventario. Consulta sobre productos. Encontrados ${encontrados.length} producto(s) que coinciden con la búsqueda.`
+      `Rol: Agente de Inventario. Consulta sobre productos${
+        esConsultaPrecio ? " y precios" : ""
+      }. Encontrados ${
+        encontrados.length
+      } producto(s) que coinciden con la búsqueda.`
     );
   }
 
-  // 5️⃣ Si no encontró coincidencias, ofrecer ayuda
-  const respuestaBase = `No encontré productos que coincidan con "${pregunta}".\n\n💡 Puedes preguntar:\n• "¿Qué productos tienen stock bajo?"\n• "Listar todos los productos"\n• Buscar por tipo: "camisas", "chaquetas", "jeans"\n• Buscar por género: "ropa mujer", "ropa hombre"\n• Buscar por color: "negro", "azul", "blanco"`;
+  // 6️⃣ Si no encontró coincidencias, buscar productos similares o sugerir
+  // Buscar productos que tengan alguna similitud (primeras letras, etc.)
+  let productosSimilares = [];
+  if (palabrasABuscar.length > 0 && palabrasABuscar[0].length > 1) {
+    const primeraPalabra = palabrasABuscar[0].toLowerCase();
+    productosSimilares = productos
+      .filter((producto) => {
+        const nombreLower = (producto.nombre || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+        // Buscar productos que empiecen con las mismas letras
+        return (
+          nombreLower.startsWith(primeraPalabra.substring(0, 3)) ||
+          nombreLower.includes(primeraPalabra.substring(0, 3))
+        );
+      })
+      .slice(0, 5);
+  }
+
+  // Construir respuesta de ayuda
+  let respuestaBase = "";
+  if (esConsultaPrecio) {
+    // Si es consulta de precio pero no se encontró el producto específico
+    // Verificar si la consulta tiene palabras muy genéricas (como "X", "producto", etc.)
+    const tienePalabraGenerica = palabrasABuscar.some(
+      (p) => p.length <= 1 || p === "x" || p === "producto"
+    );
+
+    if (tienePalabraGenerica || palabrasABuscar.length === 0) {
+      // Mostrar algunos productos de ejemplo con sus precios
+      const productosEjemplo = productos.slice(0, 5);
+      respuestaBase = `Para consultar el precio de un producto, necesito que me indiques el nombre específico del producto.\n\n`;
+      respuestaBase += `📦 Aquí tienes algunos productos disponibles con sus precios:\n`;
+      productosEjemplo.forEach((p) => {
+        respuestaBase += `• ${p.nombre}${p.talla ? ` (${p.talla})` : ""} - $${
+          p.precio
+        }\n`;
+      });
+      respuestaBase += `\n💡 Ejemplos de consultas:\n`;
+      respuestaBase += `• "¿Qué precio tiene ${
+        productosEjemplo[0]?.nombre || "Camisa Blanca"
+      }?"\n`;
+      respuestaBase += `• "¿Cuánto cuesta [nombre del producto]?"\n`;
+      respuestaBase += `• "Precio de [nombre del producto]"`;
+    } else {
+      respuestaBase = `No encontré un producto específico que coincida con "${palabrasABuscar.join(
+        " "
+      )}".\n\n`;
+      if (productosSimilares.length > 0) {
+        respuestaBase += `🔍 Productos similares que podrían interesarte:\n`;
+        productosSimilares.forEach((p) => {
+          respuestaBase += `• ${p.nombre}${p.talla ? ` (${p.talla})` : ""} - $${
+            p.precio
+          }\n`;
+        });
+        respuestaBase += `\n`;
+      } else {
+        // Mostrar algunos productos de ejemplo
+        const productosEjemplo = productos.slice(0, 5);
+        respuestaBase += `📦 Algunos productos disponibles:\n`;
+        productosEjemplo.forEach((p) => {
+          respuestaBase += `• ${p.nombre}${p.talla ? ` (${p.talla})` : ""} - $${
+            p.precio
+          }\n`;
+        });
+        respuestaBase += `\n`;
+      }
+      respuestaBase += `💡 Intenta ser más específico con el nombre del producto.`;
+    }
+  } else {
+    respuestaBase = `No encontré productos que coincidan exactamente con "${pregunta}".\n\n`;
+    if (productosSimilares.length > 0) {
+      respuestaBase += `🔍 Productos similares que podrían interesarte:\n`;
+      productosSimilares.forEach((p) => {
+        respuestaBase += `• ${p.nombre}${p.talla ? ` (${p.talla})` : ""} - $${
+          p.precio
+        }\n`;
+      });
+      respuestaBase += `\n`;
+    }
+
+    respuestaBase += `💡 Puedes preguntar:\n`;
+    respuestaBase += `• "¿Qué precio tiene [nombre del producto]?"\n`;
+    respuestaBase += `• "¿Qué productos tienen stock bajo?"\n`;
+    respuestaBase += `• "Listar todos los productos"\n`;
+    respuestaBase += `• Buscar por tipo: "camisas", "chaquetas", "jeans"\n`;
+    respuestaBase += `• Buscar por género: "ropa mujer", "ropa hombre"\n`;
+    respuestaBase += `• Buscar por color: "negro", "azul", "blanco"`;
+  }
 
   // Mejorar respuesta con OpenAI si está configurado
   return await mejorarRespuestaConOpenAI(
     respuestaBase,
-    "Rol: Agente de Inventario. Especialista en consultas de productos, stock, tallas y precios."
+    `Rol: Agente de Inventario. Especialista en consultas de productos, stock, tallas y precios.${
+      esConsultaPrecio ? " Consulta sobre precio de producto." : ""
+    } No se encontraron productos que coincidan exactamente con la búsqueda.${
+      productosSimilares.length > 0 ? " Se muestran productos similares." : ""
+    }`
   );
 }
